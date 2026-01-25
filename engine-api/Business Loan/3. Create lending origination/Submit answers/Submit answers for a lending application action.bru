@@ -1,0 +1,65 @@
+meta {
+  name: Submit answers for a lending application action
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{baseUrl}}/api/persons/:personId/lending-applications/:lendingApplicationId/question-actions/:actionId
+  body: json
+  auth: inherit
+}
+
+params:path {
+  personId: {{personId}}
+  lendingApplicationId: {{lendingApplicationId}}
+  actionId: {{actionId}}
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "predefinedAnswers": {{usePredefinedAnswers}},
+    "freeTextAnswers": {{useFreeTextAnswers}}
+  }
+}
+
+script:pre-request {
+  let predefinedAnswersOverride = bru.getCollectionVar("predefinedAnswersOverride")
+  console.log("predefinedAnswers: "+bru.getVar("predefinedAnswers"));
+  console.log("predefinedAnswersOverride: "+predefinedAnswersOverride);
+  
+  if (predefinedAnswersOverride){
+    console.log("Using overide predefined answers");
+    bru.setVar("usePredefinedAnswers", predefinedAnswersOverride);
+  } else {
+    bru.setVar("usePredefinedAnswers", bru.getVar("predefinedAnswers"));
+  }
+  
+  let freeTextAnswersOverride = bru.getCollectionVar("freeTextAnswersOverride");
+  console.log("freeTextAnswers: "+bru.getVar("freeTextAnswers"));
+  console.log("freeTextAnswersOverride: "+freeTextAnswersOverride);
+  
+  if (freeTextAnswersOverride){
+    console.log("Using overide free text answers");
+    bru.setVar("useFreeTextAnswers", freeTextAnswersOverride);
+  } else {
+    bru.setVar("useFreeTextAnswers", bru.getVar("freeTextAnswers"));
+  }
+}
+
+docs {
+  Submit the answers for a lending application question action. 
+  This should contain the answers provided by a customer for all the questions fetched by the specific actionId.
+  
+  :::warning
+  
+   This endpoint is not yet implemented and subject to change.
+  
+  :::
+  
+}

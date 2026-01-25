@@ -1,0 +1,41 @@
+meta {
+  name: Mark documents for a lending application action as viewed
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/persons/:personId/lending-applications/:lendingApplicationId/document-orchestration-actions/:actionId/view
+  body: json
+  auth: inherit
+}
+
+params:path {
+  personId: {{personId}}
+  lendingApplicationId: {{lendingApplicationId}}
+  actionId: {{actionId}}
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "documentIds": {{documentIds}}
+  }
+}
+
+docs {
+  Applicant documents associated to a lending application action must be marked as viewed and signed in order for pending action of type VIEW_AND_SIGN_DOCUMENTS to be completed.
+  
+  Use this endpoint to mark applicant documents associated to a lending application action as viewed.
+  
+  Any document can be marked as viewed more than once and the request allows for marking multiple as viewed at the same time.
+  
+  :::warning
+   This endpoint is not yet implemented and subject to change.
+  :::
+  
+}

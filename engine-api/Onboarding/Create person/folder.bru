@@ -1,0 +1,10 @@
+meta {
+  name: Create person
+  seq: 2
+}
+
+script:pre-request {
+  if (!bru.getGlobalEnvVar('smsOTP')) {
+    throw new Error('Global variable smsOTP not present');
+  }
+}

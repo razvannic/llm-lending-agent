@@ -1,0 +1,19 @@
+meta {
+  name: Create onboarding checks
+  type: http
+  seq: 13
+}
+
+post {
+  url: {{baseUrl}}/api/businesses/:businessId/onboarding/checks
+  body: none
+  auth: none
+}
+
+params:path {
+  businessId: {{businessId}}
+}
+
+headers {
+  x-device-id: {{deviceId}}
+}

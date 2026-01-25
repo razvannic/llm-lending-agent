@@ -1,0 +1,27 @@
+meta {
+  name: Update area of operation
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/api/businesses/:businessId/area-of-operation
+  body: json
+  auth: none
+}
+
+params:path {
+  businessId: {{businessId}}
+}
+
+headers {
+  x-device-id: {{deviceId}}
+}
+
+body:json {
+  {
+    "areasOfOperation": [
+      "{{countryCode}}"
+    ]
+  }
+}

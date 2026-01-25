@@ -1,0 +1,10 @@
+meta {
+  name: Create device
+  seq: 2
+}
+
+script:pre-request {
+  if (!bru.getGlobalEnvVar('phoneNumber')) {
+    throw new Error('Global variable phoneNumber not present');
+  }
+}

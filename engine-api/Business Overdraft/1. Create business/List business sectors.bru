@@ -1,0 +1,27 @@
+meta {
+  name: List business sectors
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/businesses/sectors
+  body: none
+  auth: none
+}
+
+script:post-response {
+  const responseData = res.getBody();
+  let businessSector = responseData.businessSectors[0];
+  
+  if (bru.getGlobalEnvVar("countryCode")=="AU") {
+    businessSector = {
+      "businessSector": "BEER_MFG",
+      "displayText": "Beer Manufacturing"
+    }
+  }
+  
+  console.log("Using business sector: "+businessSector.displayText)
+  
+  bru.setVar("sector", businessSector.businessSector);
+}

@@ -1,0 +1,39 @@
+meta {
+  name: Complete a lending application action
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{baseUrl}}/api/persons/:personId/lending-applications/:lendingApplicationId/actions/:actionId/status
+  body: json
+  auth: inherit
+}
+
+params:path {
+  personId: {{personId}}
+  lendingApplicationId: {{lendingApplicationId}}
+  actionId: {{actionId}}
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "actionStatus": "COMPLETED"
+  }
+}
+
+docs {
+  Use this API to notify that a pending applicant action is now complete.
+  
+  :::warning
+  
+   This endpoint is not yet implemented and subject to change.
+  
+  :::
+  
+}

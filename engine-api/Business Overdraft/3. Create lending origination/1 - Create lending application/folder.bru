@@ -1,0 +1,15 @@
+meta {
+  name: 1. Create lending application
+  seq: 1
+}
+
+script:pre-request {
+  if (!bru.getGlobalEnvVar('accountHolderId') &&
+      !bru.getVar('accountHolderId')) {
+    throw new Error('Global or Environment Variable accountHolderId not present');
+  }
+  if (!bru.getGlobalEnvVar('accountId') &&
+      !bru.getVar('accountId')) {
+    throw new Error('Global or Environment Variable accountId not present');
+  }
+}

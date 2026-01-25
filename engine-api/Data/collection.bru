@@ -1,0 +1,81 @@
+vars:pre-request {
+  date: 2025-10-20
+  entity: ACCOUNT
+  data-agent: c203459c-902d-405c-bed1-fa24bae55186
+  generateNewKeyPair: false
+  nodePath: /opt/homebrew/bin/node
+}
+
+vars:post-response {
+  : 
+}
+
+script:pre-request {
+  if (!bru.getCollectionVar('date') || 
+      !bru.getCollectionVar('entity') || 
+      !bru.getCollectionVar("nodePath") || 
+      !bru.getCollectionVar('data-agent')) {
+    throw new Error('Collection variable date, entity, nodePath (where node), data-agent (found in MP) not present');
+  }
+  
+  if (!bru.getGlobalEnvVar("dataPrivateKeyPem") || 
+      !bru.getGlobalEnvVar("dataPublicKeyPem")) {
+    throw new Error('Global variable dataPrivateKeyPem or dataPublicKeyPem not present. You can also set generateNewKeyPair (true|false) to generate a new key pair');
+  }
+}
+
+docs {
+  The data module uses a private/public key pair to safely deliver encrypted files to you, the key pair can be generated in this Bruno collection if you set the collection variable `generateNewKeyPair` to `true` and you run the first request `List file status`. Please only run this once as the public key needs to be registered in Management Portal (https://{your-instance}.enginebystarling.net/session/data-export/agent-management) where Engine uses it to encrypt the files.
+  
+  When you do get stuck please have a look at the Bruno -> Dev Tools -> Console for more detailed log messages.
+  
+  This executes the javascript file `decrypt.js` where the decrypted csv files will be stored on your machine, usually in the same Data directory.
+  
+  # Headers
+  
+  You will need to add the following header at the Collection level to ensure all subsequest calls use the correct credentials:
+  
+  | **Name** | **Description** |
+  | --- | --- |
+  | x-engine-api-key | From 1Password or ask Engine |
+  
+  
+  # Variables
+  
+  You will need to ensure you have the following variables configured:
+  
+  | **Name** | **Description** | Which Bruno var? |
+  | --- | --- | --- |
+  | date | Date of files to collect | Collection |
+  | entity | Can be found running `List file status` GET request or from docs site | Collection |
+  | data-agent | UUID given when registring your public key in Management Portal | Collection |
+  | generateNewKeyPair | To generate a new private/public key pair | Collection |
+  | nodePath | Run `which node` on your Mac | Collection |
+  | dataPrivateKeyPem | Private key in Pem format, you can generate this as previous comments suggest | Global |
+  | dataPublicKeyPem | Public key in Pem format, you can generate this as previous comments suggest | Global |
+  
+  
+    # Install
+  
+      In the root of this collection 'Data', you need to install packages within the `package.json` file, run:
+  
+      `npm install`
+  
+      You also need to add `scripts.moduleWhitelist` to your bruno.json.
+  
+      Here is an example:
+  
+      ```
+      {
+        "version": "1",
+        "name": "Payments",
+        "type": "collection",
+        "ignore": ["node_modules", ".git"],
+        "scripts": {
+          "moduleWhitelist": ["crypto", "node-rsa"]
+        }
+      }
+      ```
+  
+      The last thing you would need to do is change your mode from `Safe` to `Developer`
+}

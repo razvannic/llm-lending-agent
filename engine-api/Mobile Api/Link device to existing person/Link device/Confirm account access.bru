@@ -1,0 +1,17 @@
+meta {
+  name: Confirm account access
+  type: http
+  seq: 10
+}
+
+put {
+  url: {{baseUrl}}/api/devices/{{deviceId}}/account-access/confirm
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "decision": "APPROVED"
+  }
+}

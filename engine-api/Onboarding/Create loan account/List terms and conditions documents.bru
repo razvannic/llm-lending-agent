@@ -1,0 +1,29 @@
+meta {
+  name: List terms and conditions documents
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/terms?accountProductId={{loanProductId}}&currentVersionOnly=true
+  body: json
+  auth: inherit
+}
+
+params:query {
+  accountProductId: {{loanProductId}}
+  currentVersionOnly: true
+}
+
+headers {
+  Accept: application/json
+}
+
+tests {
+  let responseData = res.getBody();
+  bru.setVar("loanTermsAndConditionsDocumentId", responseData[0].versions[0].id);
+}
+
+docs {
+  List all terms and conditions documents and their associated versions for an account product.
+}

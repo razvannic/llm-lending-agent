@@ -1,0 +1,26 @@
+meta {
+  name: Update purpose of relationship
+  type: http
+  seq: 7
+}
+
+put {
+  url: {{baseUrl}}/api/persons/{{personId}}/purpose-of-relationship
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "purposeOfRelationship": "CURRENT_ACCOUNT"
+  }
+}
+
+docs {
+  Update a person's purpose for opening an account. If the purpose of relationship doesn't already exist, it is created.
+}

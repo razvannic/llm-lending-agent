@@ -1,0 +1,78 @@
+meta {
+  name: Add device
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/devices
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "appVersion": "1.0.0",
+    "key": {
+      "type": "RSA_2048",
+      "value": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA39K8LKGefWWcN69majlbEOAfJTw1KYGZdEx/yO3XLULCs+bM0m9Gfc7xw6JeJ9m5ApuPQQAcsqkiifNONdvE56Z1DkAbAXdJKtspfZrAY7oYx9zYPVHIC214mUT5rs1cIUuD3vZWta4HNxpDK//K6sZ/WEFYWdg2KLWBZO7ARLXzY9zAxoFPArZ7kv46IVpCp/R65h/VrnyjV44XFI+4JHS092WSGxm96WR3YJBOywK9Xe0JvRs9bGS592J7bgwdu4ySTdLT7kEmpeexSBReQpsI/JR9xvA7vfbu9keehIWDiq4Ho7UutCTxKQoN9kWNqJDFUSSqqdOQtGw3DVLdLQIDAQAB"
+    },
+    "metadata": {
+      "brand": "Postman",
+      "manufacturer": "Postman",
+      "model": "Simulated Model",
+      "osVersion": "Android: 13 - ROM: 5.4.210-qgki-25866952-abG990BXXU2EWAJ",
+      "product": "r9qxxx",
+      "devicePhysicalId": "35583C19",
+      "industrialDesignName": "r9q"
+    },
+    "mobileNumber": {
+      "countryCode": "{{countryCode}}",
+      "number": "{{phoneNumberWithExtension}}"
+    },
+    "name": "PostmanDevice",
+    "notifications": {
+      "token": "cI4_TRUPT...",
+      "platform": "FIREBASE"
+    },
+    "platform": "ANDROID"
+  }
+}
+
+script:pre-request {
+  bru.deleteAllVars();
+  
+  const phoneNumber = bru.getGlobalEnvVar('phoneNumber');
+  const phoneNumberWithExtension = phoneNumber +"#"+ Math.round(Math.random(1,10) * 100000);
+  bru.setVar("phoneNumberWithExtension", phoneNumberWithExtension)
+  
+  bru.setGlobalEnvVar("deviceId", "");
+  bru.setGlobalEnvVar("personId", "");
+  bru.setGlobalEnvVar("businessId", "");
+  
+}
+
+script:post-response {
+  let responseData = res.getBody();
+  bru.setVar("deviceId", responseData.deviceId);
+  bru.setGlobalEnvVar("deviceId", responseData.deviceId);
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  Add a device based on the information provided by a person.
+  
+  Returns `deviceId` which is required for most other actions relating to devices.
+  
+  You should fetch the registered device via the `Retrieve a device` API call to ensure the device is created.
+  
+}

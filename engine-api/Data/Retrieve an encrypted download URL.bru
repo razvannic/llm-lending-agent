@@ -1,0 +1,70 @@
+meta {
+  name: Retrieve an encrypted download URL
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/data/:date/:entity
+  body: none
+  auth: inherit
+}
+
+params:path {
+  date: {{date}}
+  entity: {{entity}}
+}
+
+headers {
+  x-data-agent-id: {{data-agent}}
+  x-engine-api-key: {{apiKey}}
+}
+
+script:post-response {
+  const { execSync } = require('child_process');
+  
+  const privateKeyPem = bru.getGlobalEnvVar('dataPrivateKeyPem');
+  
+  if (!privateKeyPem) {
+    throw new Error('Global variable dataPrivateKeyPem not present');
+  }
+  
+  const responseData = res.getBody();
+  const nodePath = bru.getCollectionVar("nodePath");
+  const dataAgent = bru.getCollectionVar('data-agent');
+  const entity = bru.getCollectionVar('entity');
+  const presignedUrl = responseData.url;
+  const encryptedAesKey = responseData.encryption.key;
+  const encodedAesIv = responseData.encryption.iv;
+  
+  try {  
+    const customEnv = {
+      PRIVATE_KEY_PEM: privateKeyPem,
+      ENTITY: entity,
+      PRESIGNED_URL: presignedUrl,
+      ENCRYPTED_AES_KEY: encryptedAesKey,
+      ENCODED_AES_IV: encodedAesIv,
+      OUTPUT_DIR: `${__dirname}`,
+      ...process.env 
+    };
+    
+    const command = `${nodePath} ${__dirname}/decrypt.js`;
+  
+    const armoredCiphertext = execSync(command, { 
+      encoding: 'utf8', 
+      stdio: 'pipe',
+      env: customEnv
+    }).trim();
+    console.log(armoredCiphertext);
+    res.body = armoredCiphertext;
+      
+  } catch (e) {
+      console.error("External Node.js Encryption Failed:", e.stderr ? e.stderr.toString() : e.message);
+      throw new Error(`Encryption failed: ${e.stderr ? e.stderr.toString() : e.message}`);
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

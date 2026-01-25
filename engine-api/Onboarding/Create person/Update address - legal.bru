@@ -1,0 +1,28 @@
+meta {
+  name: Update address - legal
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{baseUrl}}/api/persons/{{personId}}/addresses
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "type": "LEGAL",
+    "address": {{address}},
+    "source": "mobile"
+  }
+}
+
+docs {
+  Update a person's current address. If an address of the specified type doesn't exist, it is created.
+}

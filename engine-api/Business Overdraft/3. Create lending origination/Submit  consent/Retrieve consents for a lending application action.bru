@@ -1,0 +1,42 @@
+meta {
+  name: Retrieve consents for a lending application action
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/persons/:personId/lending-applications/:lendingApplicationId/consent-actions/:actionId
+  body: none
+  auth: inherit
+}
+
+params:path {
+  personId: {{personId}}
+  lendingApplicationId: {{lendingApplicationId}}
+  actionId: {{actionId}}
+}
+
+headers {
+  Accept: application/json
+  ~Accept-Language: <string>
+}
+
+script:post-response {
+  let json = res.getBody();
+  let consents = json.consents;
+  const list = consents.map(element => element.consent.consentId)
+  bru.setVar("consentIds", JSON.stringify(list));
+}
+
+docs {
+  Use this endpoint to retrieve all consents needed to perform a consent action associated with a customer's lending application.
+  
+  A consent can be either a reference to a URI document or a localised text in the requested language.
+  
+  Where consents are versioned (in the case of documents), this will always retrieve the latest version available.
+  
+  :::warning
+   This endpoint is not yet implemented and subject to change.
+  :::
+  
+}

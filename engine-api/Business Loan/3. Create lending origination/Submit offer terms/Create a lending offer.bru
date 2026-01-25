@@ -1,0 +1,51 @@
+meta {
+  name: Create a lending offer
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{baseUrl}}/api/persons/:personId/lending-applications/:lendingApplicationId/offer-actions/:actionId
+  body: json
+  auth: inherit
+}
+
+params:path {
+  personId: {{personId}}
+  lendingApplicationId: {{lendingApplicationId}}
+  actionId: {{actionId}}
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "arrearsInterestRate": {{arrearsInterestRate}},
+    "arrearsRepaymentScheduleType": "IMMEDIATE",
+    "interestCompoundingFrequency": "ANNUALLY",
+    "interestRate": {{interestRate}},
+    "numberOfRepayments": {{numberOfRepayments}},
+    "offerAmount": {
+      "currency": "{{currencyCode}}",
+      "unit": "MINOR",
+      "value": {{offerAmount}}
+    },
+    "productType": "LOAN",
+    "repaymentFrequency": "MONTHLY",
+    "repaymentType": "EQUAL_REPAYMENTS"
+  }
+}
+
+docs {
+  Use this endpoint to submit an offer for a lending application as part of an offer action.
+  
+  :::warning
+  
+   This endpoint is not yet implemented and subject to change.
+  
+  :::
+  
+}

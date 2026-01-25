@@ -1,0 +1,20 @@
+meta {
+  name: Upload document file to pre-signed url
+  type: http
+  seq: 11
+}
+
+put {
+  url: {{identityDocumentPresignedUrl}}
+  body: file
+  auth: none
+}
+
+headers {
+  content-md5: bqZVYjU0gYnPeDsOh2bsCw==
+  content-type: image/png
+}
+
+body:file {
+  file: @file(../../assets/dummy.png) @contentType(image/png)
+}

@@ -1,0 +1,10 @@
+meta {
+  name: Create lending origination
+  seq: 7
+}
+
+script:pre-request {
+  if (!bru.getGlobalEnvVar('personId')) {
+    throw new Error('Global variable personId not present');
+  }
+}

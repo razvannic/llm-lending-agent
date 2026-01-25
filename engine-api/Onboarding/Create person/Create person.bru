@@ -1,0 +1,57 @@
+meta {
+  name: Create person
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/persons
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "title": "Mr",
+    "firstName": "{{randomFirstName}}",
+    "lastName": "{{randomLastName}}",
+    "dateOfBirth": "1980-01-01",
+    "emailAddress": "{{randomExampleEmail}}",
+    "mobileNumber": {
+      "countryCode": "{{countryCode}}",
+      "number": "{{phoneNumberWithExtension}}"
+    },
+    "birthPlace": "London",
+    "gender": "MALE",
+    "middleName": "TwoPass",
+    "nationalIdentificationNumber": "12-345-678",
+    "preferredLocale": "en-gb"
+  }
+}
+
+script:pre-request {
+  var randomNumber = Math.round(Math.random() * 100000000);
+  var firstName = bru.getCollectionVar("firstName");
+  var lastName = bru.getCollectionVar("lastName");
+  var randomFirstName = firstName;
+  var randomLastName = lastName;
+  var randomExampleEmail = firstName+"."+lastName+"@"+randomNumber+".com"
+  bru.setVar("randomFirstName",randomFirstName)
+  bru.setVar("randomLastName",randomLastName)
+  bru.setVar("randomExampleEmail",randomExampleEmail)
+}
+
+script:post-response {
+  let responseData = res.getBody();
+  bru.setVar("personId", responseData.personId);
+  bru.setGlobalEnvVar("personId", responseData.personId);
+}
+
+docs {
+  Minimal details required to create a person.
+}

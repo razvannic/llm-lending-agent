@@ -1,0 +1,11 @@
+meta {
+  name: Create business transaction account
+  seq: 6
+}
+
+script:pre-request {
+  if (!bru.getGlobalEnvVar('personId') || 
+      !bru.getGlobalEnvVar('businessId')) {
+    throw new Error('Global variable personId or businessId not present');
+  }
+}

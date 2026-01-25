@@ -1,0 +1,33 @@
+meta {
+  name: Request encrypted files
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/data/:date
+  body: json
+  auth: inherit
+}
+
+params:path {
+  date: {{date}}
+}
+
+headers {
+  x-data-agent-id: {{data-agent}}
+  x-engine-api-key: {{apiKey}}
+}
+
+body:json {
+  {
+    "entities": [
+      "{{entity}}"
+    ]
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

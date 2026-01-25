@@ -1,0 +1,24 @@
+meta {
+  name: Retrieve person-s email address
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{baseUrl}}/api/persons/{{personId}}/emails
+  body: json
+  auth: inherit
+}
+
+headers {
+  Accept: application/json
+}
+
+script:post-response {
+  let responseData = res.getBody();
+  bru.setVar("emailAddressId", responseData.emailAddressId);
+}
+
+docs {
+  Retrieve a person's current email address details.
+}

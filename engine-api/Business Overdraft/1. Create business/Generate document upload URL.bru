@@ -1,0 +1,32 @@
+meta {
+  name: Generate document upload URL
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{baseUrl}}/api/documents/upload-url
+  body: json
+  auth: none
+}
+
+headers {
+  accept: application/json
+  content-type: application/json
+  x-device-id: {{deviceId}}
+}
+
+body:json {
+  {
+    "contentMd5": "bqZVYjU0gYnPeDsOh2bsCw==",
+    "businessId": "{{businessId}}",
+    "mimeType": "image/png",
+    "action": "BUSINESS_ONBOARDING"
+  }
+}
+
+script:post-response {
+  let responseData = res.getBody();
+  bru.setVar("identityDocumentPresignedUrl", responseData.presignedUrl);
+  bru.setVar("identityDocumentId", responseData.documentId);
+}

@@ -1,0 +1,36 @@
+meta {
+  name: Create an account
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/api/accounts
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "name": "Personal - Transaction Account",
+    "accountProductId": "{{accountProductId}}",
+    "personId": "{{personId}}"
+  }
+}
+
+script:post-response {
+  let responseData = res.getBody();
+  bru.setVar("accountId", responseData.accountId);
+  bru.setGlobalEnvVar("accountId", responseData.accountId);
+  bru.setVar("accountHolderId", responseData.accountHolderId);
+  bru.setGlobalEnvVar("accountHolderId", responseData.accountHolderId);
+}
+
+docs {
+  Create an account.
+}

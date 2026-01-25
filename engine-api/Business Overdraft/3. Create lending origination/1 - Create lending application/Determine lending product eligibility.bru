@@ -1,0 +1,40 @@
+meta {
+  name: Determine lending product eligibility
+  type: http
+  seq: 2
+}
+
+put {
+  url: {{baseUrl}}/api/account-holders/{{accountHolderId}}/accounts/{{accountId}}/lending-products/{{lendingProductId}}/eligibility
+  body: none
+  auth: inherit
+}
+
+headers {
+  Accept: application/json
+}
+
+script:pre-request {
+  if (!bru.getCollectionVar('lendingProductId')) {
+    throw new Error('Collection variable lendingProductId not present, run "Retrieve available lending products" to view available products and set the collection variable.');
+  }
+}
+
+script:post-response {
+  let responseData = res.getBody();
+  bru.setVar("eligibilityId", responseData.eligibilityId);
+  console.log("Product eligibility: "+responseData.eligibilityDecision);
+}
+
+docs {
+  Determine the eligibility for a lending product for a given account holder and account. 
+  
+  This will return if the account holder is eligible for the given lending product and an ID that will be required to create an application.
+  
+  :::warning
+  
+   This endpoint is not yet implemented and subject to change.
+  
+  :::
+  
+}

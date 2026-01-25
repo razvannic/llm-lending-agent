@@ -1,0 +1,36 @@
+meta {
+  name: Generate phrase for identity verification video
+  type: http
+  seq: 13
+}
+
+post {
+  url: {{baseUrl}}/api/documents/phrases
+  body: json
+  auth: inherit
+}
+
+params:query {
+  ~suppliedPhrase: <string>
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "personId": "{{personId}}",
+    "action": "ONBOARDING"
+  }
+}
+
+script:post-response {
+  let responseData = res.getBody();
+  bru.setVar("videoPhraseId", responseData.phraseId);
+}
+
+docs {
+  Generate a phrase for a user to say in an identity verification video. In the request body, specify the `action` that this request relates to, for example `ONBOARDING`.<br><br>Send the returned phrase to the user.
+}

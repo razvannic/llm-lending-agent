@@ -1,0 +1,10 @@
+meta {
+  name: Create person onboarding checks
+  seq: 3
+}
+
+script:pre-request {
+  if (!bru.getGlobalEnvVar('personId')) {
+    throw new Error('Global variable personId not present');
+  }
+}

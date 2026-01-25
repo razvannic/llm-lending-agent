@@ -1,0 +1,14 @@
+meta {
+  name: Create loan account
+  seq: 8
+}
+
+script:pre-request {
+  if (!bru.getGlobalEnvVar('personId')) {
+    throw new Error('Global variable personId not present');
+  }
+  
+  if (!bru.getVar('accountHolderId')) {
+    throw new Error('Variable accountHolderId not present');
+  }
+}

@@ -1,0 +1,24 @@
+meta {
+  name: Submit ongoing person screening search result
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{baseUrl}}/api/persons/:personId/search/ongoing/result
+  body: json
+  auth: none
+}
+
+params:path {
+  personId: {{personId}}
+}
+
+body:json {
+  {
+    "personSearchType": "SCREENING",
+    "screeningSearchStatus": "SUCCESS",
+    "matches": [],
+    "externalSearchIdentifier": "cf67b798-6458-48f9-b1a6-dd240c0fc58b"
+  }
+}

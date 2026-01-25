@@ -1,0 +1,27 @@
+meta {
+  name: Update business explanations
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{baseUrl}}/api/businesses/:businessId/explanations
+  body: json
+  auth: none
+}
+
+params:path {
+  businessId: {{businessId}}
+}
+
+headers {
+  x-device-id: {{deviceId}}
+}
+
+body:json {
+  {
+    "businessNature": {
+      "explanation": "Explanations"
+    }
+  }
+}

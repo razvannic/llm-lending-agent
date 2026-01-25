@@ -1,0 +1,23 @@
+meta {
+  name: Retrieve terms and conditions acceptance status
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/persons/{{personId}}/terms?accountProductId={{accountProductId}}
+  body: json
+  auth: inherit
+}
+
+params:query {
+  accountProductId: {{accountProductId}}
+}
+
+headers {
+  Accept: application/json
+}
+
+docs {
+  List all terms and conditions documents and their associated versions for an account product.
+}

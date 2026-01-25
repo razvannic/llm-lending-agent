@@ -1,0 +1,29 @@
+meta {
+  name: Confirm video upload
+  type: http
+  seq: 16
+}
+
+put {
+  url: {{baseUrl}}/api/documents/{{videoDocumentId}}/confirm-upload
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "fileName": "dummy.mp4",
+    "personId": "{{personId}}",
+    "documentType": "VIDEO",
+    "phraseId": "{{videoPhraseId}}"
+  }
+}
+
+docs {
+  Confirm that the document has been uploaded successfully. Call this endpoint after uploading the document (and any metadata) to let Engine know that the upload is complete.<br><br>In the request body, specify the `documentType` that corresponds the `action` you set when you generated the document upload URL. For example, if the `action` was `PASSWORD_RESET`, set the `documentType` to `PASSWORD_RESET_VIDEO`.<br><br>Note that the `ONBOARDING` `action` can correspond to either `IMAGE` or `VIDEO`.
+}

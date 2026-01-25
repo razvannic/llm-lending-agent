@@ -1,0 +1,115 @@
+{
+  "name": "Engine",
+  "variables": [
+    {
+      "name": "baseUrl",
+      "value": "",
+      "type": "text",
+      "enabled": true,
+      "secret": false
+    },
+    {
+      "name": "apiKey",
+      "value": "",
+      "type": "secret",
+      "enabled": true,
+      "secret": true
+    },
+    {
+      "name": "personId",
+      "value": "",
+      "type": "text",
+      "enabled": true,
+      "secret": false
+    },
+    {
+      "name": "businessId",
+      "value": "",
+      "type": "text",
+      "enabled": true,
+      "secret": false
+    },
+    {
+      "name": "deviceId",
+      "value": "",
+      "type": "text",
+      "enabled": true,
+      "secret": false
+    },
+    {
+      "name": "privateKeyPem",
+      "value": "",
+      "type": "secret",
+      "enabled": true,
+      "secret": false
+    },
+    {
+      "name": "publicKeyPem",
+      "value": "",
+      "type": "secret",
+      "enabled": true,
+      "secret": false
+    },
+    {
+      "name": "deviceKey",
+      "value": "",
+      "type": "secret",
+      "enabled": true,
+      "secret": false
+    },
+    {
+      "name": "mobileUrl",
+      "value": "",
+      "type": "text",
+      "enabled": true,
+      "secret": false
+    },
+    {
+      "name": "dataPrivateKeyPem",
+      "value": "",
+      "type": "secret",
+      "enabled": true,
+      "secret": false
+    },
+    {
+      "name": "dataPublicKeyPem",
+      "value": "",
+      "type": "secret",
+      "enabled": true,
+      "secret": false
+    },
+    {
+      "name": "batchPaymentPublicKeyBase64",
+      "value": "",
+      "type": "secret",
+      "enabled": true,
+      "secret": true
+    },
+    {
+      "name": "phoneNumber",
+      "value": "",
+      "type": "text",
+      "enabled": true,
+      "secret": false
+    },
+    {
+      "name": "smsOTP",
+      "value": "provide-input",
+      "type": "text",
+      "enabled": true,
+      "secret": false
+    },
+    {
+      "name": "countryCode",
+      "value": "GB",
+      "type": "text",
+      "enabled": true,
+      "secret": false
+    }
+  ],
+  "info": {
+    "type": "bruno-environment",
+    "exportedAt": "2026-01-16T10:28:49.778Z",
+    "exportedUsing": "Bruno/v2.15.1"
+  }
+}

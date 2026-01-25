@@ -1,0 +1,27 @@
+meta {
+  name: Accept terms and conditions
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{baseUrl}}/api/persons/{{personId}}/terms/accept
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "accountProductId": "{{accountProductId}}",
+    "documentIds": {{termsAndConditionsDocumentIds}}
+  }
+}
+
+docs {
+  Accept the active version of the terms and conditions for a person's account product.
+}

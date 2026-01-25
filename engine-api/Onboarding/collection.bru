@@ -1,0 +1,98 @@
+meta {
+  name: Onboarding
+  seq: 1
+}
+
+headers {
+  x-engine-api-key: {{apiKey}}
+}
+
+auth {
+  mode: none
+}
+
+vars:pre-request {
+  firstName: Mike
+  lastName: Engine
+  password: Engine12345#
+  businessType: COMPANY
+  ~lendingProductId: provide-input
+  ~loanProductConfigurationId: provide-input
+  ~loanProductId: provide-input
+  ~loanAmountMinor: 5000
+  ~savingsAmountMinor: 5000
+  ~savingsProductId: provide-input
+  ~registrationNumber: 1122334455
+}
+
+script:pre-request {
+  if (!bru.getGlobalEnvVar('countryCode')) {
+    throw new Error('Global variable countryCode not present');
+  }
+  
+  bru.setVar("employmentSector","WEBSITE_DEVELOPMENT");
+  bru.setVar("sourceOfFunds", "MONTHLY_SALARY");
+  
+  if (bru.getGlobalEnvVar("countryCode")=="AU") { 
+    bru.setVar("address", "{\"locality\": \"local\",\"postcode\": \"1411\",\"addressFormat\": \"AUSTRALIA\",\"line1\": \"12 A Street\",\"line2\": \"Local NSW 1411\",\"streetNumber\": \"1\",\"streetName\": \"A Street\",\"state\": \"NSW\"}");
+    bru.setVar("currencyCode", "AUD");
+    bru.setVar("region", "AUD");
+    bru.setVar("employmentSector", "PHOTOGRAPHER");
+    bru.setVar("sourceOfFunds", "EMPLOYMENT_INCOME");
+  }
+  
+  if (bru.getGlobalEnvVar("countryCode")=="GB") {
+    bru.setVar("address","{\"addressFormat\": \"UK\",\"county\": \"Devon\",\"line1\": \"3 Main Street\",\"postTown\": \"Plymouth\",\"postcode\": \"PL755NC\"}");
+    bru.setVar("currencyCode", "GBP");
+    bru.setVar("region", "UK");
+  }
+  
+  if (bru.getGlobalEnvVar("countryCode")=="UAE") {
+    bru.setVar("address", "{\"addressFormat\": \"INTERNATIONAL\",\"line1\": \"164 Al Jaddaf Walk\",\"city\": \"Dubai\",\"countryCode\": \"AE\", \"line 2\": \"16961\", \"line 3\":\"United Arab Emirates\", \"postcode\":\"1111\"}");
+    bru.setVar("currencyCode", "DIR");
+    bru.setVar("region", "UAE");
+  }
+  
+  if (bru.getGlobalEnvVar("countryCode")=="QA") {
+    bru.setVar("address", "{\"addressFormat\": \"INTERNATIONAL\",\"line1\": \"Oasis Gate 2\",\"city\": \"Doha\",\"countryCode\": \"QA\", \"line 2\": \"Al Khaleej\", \"line 3\":\"Qatar\", \"postcode\":\"7GP9\"}");
+    bru.setVar("currencyCode", "QAR");
+    bru.setVar("region", "Qatar");
+  }
+}
+
+docs {
+  This flow progresses through the onboarding of a person and account (including loan). Ahead of using the flow, the following collection variables should be updated:
+  
+  | **Name** | **Description** | **Environment** |
+  | --- | --- | --- |
+  | `baseUrl` | Base url of Engine api (https://api.demo.nestboxsb.enginebystarling.net) | Global |
+  | `apiKey` | x-engine-api-key needed for authentication (speak to Engine for more details) | Global |
+  | `phoneNumber` | The phone number of the device to be used for testing. An extension will be added to the phone number, allowing re-use of the device within the same environment. | Global |
+  | `smsOTP` | Once a device has been registered an OTP code will be sent to the mobile number, add it here before completing onboarding of Person. | Global |
+  | `countryCode` | Country code, needed to set other location vars (currency, region, address, etc.) | Global |
+  
+  To execute the flow:
+  
+  - Run the `Create Device` folder.
+      
+  - Set the Global `smsOTP` variable with the code that was sent to you via SMS (ensure the `phoneNumber` in the Global variables has been set correctly).
+      
+  - Run the `Create Person` folder.
+      
+  
+  At this point, the person should be visible in MP. To complete onboarding:
+  
+  - Enter the persons wealth information via MP (depending on tenant configuration).
+      
+  - Run the `Create onboarding checks` folder.
+      
+  - Complete the review within MP (depending on tenant configuration).
+      
+  
+  At this point, the person should have been onboarded. You can now complete the following actions:
+  
+  - Run the `Create transaction account` to create a transaction account.
+  - Run the `Create loan account` to create a loan linked to the previous transaction account. Deprecated: follow lending origination to create a loan.
+  - Run the `Create business` to create a business.
+  - Run the `Create business transaction account` to create a business transaction account.
+}

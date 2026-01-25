@@ -1,0 +1,33 @@
+meta {
+  name: Retrieve current loan schedule
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{baseUrl}}/api/loans/{{loanId}}/schedule/current?interest=true&balance=true
+  body: none
+  auth: inherit
+}
+
+params:query {
+  interest: true
+  balance: true
+  ~companyId: @9Ab76XEYfVEcFL5r5GBZMpurmtqT-gyotFh=
+  ~mobileNumber: <string>
+  ~offset: <integer>
+  ~limit: 100
+}
+
+headers {
+  Accept: application/json
+}
+
+docs {
+  List accounts that match the supplied criteria. You must filter the results by specifying one of the following parameters:
+  
+  * `personId` (deprecated)
+  * `companyId` (deprecated)
+  * `mobileNumber` (not yet implemented)
+  
+}

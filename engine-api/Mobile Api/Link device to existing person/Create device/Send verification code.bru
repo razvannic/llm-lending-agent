@@ -1,0 +1,30 @@
+meta {
+  name: Send verification code
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/devices/{{deviceId}}/verification-codes
+  body: json
+  auth: inherit
+}
+
+headers {
+  Accept: application/json
+  ~Accept-Language: en-GB
+}
+
+script:pre-request {
+  const deviceId = bru.getVar('deviceId');
+  if (!deviceId) {
+    throw new Error('Variable deviceId not present');
+  }
+  
+  bru.setGlobalEnvVar("smsOTP", "provide-input")
+}
+
+docs {
+  Send an OTP code via SMS that can be used to verify a device as part of the initial application process.
+  
+}

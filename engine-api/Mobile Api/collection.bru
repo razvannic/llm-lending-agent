@@ -1,0 +1,42 @@
+headers {
+  x-engine-api-key: {{apiKey}}
+}
+
+vars:pre-request {
+  countryCode: AU
+  smsOTP: 675266
+  linkPhoneNumber: 
+}
+
+docs {
+  Install
+  
+  The Mobile Api's uses javascript code to generate private and public keys which you need to register a new device and sign your request messages.
+  
+  In the root of this collection 'Mobile Api', you need to install packages within the `package.json` file, run:
+  
+  `npm install`
+  
+  You also need to add `scripts.moduleWhitelist` to your bruno.json.
+  
+  Here is an example:
+  
+  ```
+  {
+    "version": "1",
+    "name": "Mobile Api",
+    "type": "collection",
+    "ignore": [
+      "node_modules",
+      ".git"
+    ],
+    "scripts": {
+      "moduleWhitelist": [
+        "node-rsa"
+      ]
+    }
+  }
+  ```
+  
+  The last thing you would need to do is change your mode from `Safe` to `Developer`
+}

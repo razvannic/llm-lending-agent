@@ -1,0 +1,111 @@
+meta {
+  name: Provide person credit bureau report details
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/persons/:personId/credit-bureau-checks/:creditBureauCheckId
+  body: json
+  auth: none
+}
+
+params:path {
+  personId: {{personId}}
+  creditBureauCheckId: {{creditBureauCheckId}}
+}
+
+body:json {
+  {
+    "creditBureauCheckReport": {
+      "accountDetailsWithHistory": [
+        {
+          "accountClassification": {
+            "accountProviderClassification": "BANK",
+            "accountType": "SECURED_LENDING"
+          },
+          "accountLimitHistory": [
+            {
+              "creditLimit": {
+                "currency": "AUD",
+                "unit": "MINOR",
+                "value": 200000
+              },
+              "effectiveFrom": "2023-05-01"
+            }
+          ],
+          "accountStatusHistory": [
+            {
+              "effectiveFrom": "2023-05-01",
+              "status": "NOT_DUE"
+            },
+            {
+              "effectiveFrom": "2023-06-01",
+              "status": "ONE_MONTH_OVERDUE"
+            }
+          ],
+          "openedAt": "2023-04-01",
+          "updatedAt": "2023-06-01"
+        }
+      ],
+      "accountEnquiryHistory": [
+        {
+          "accountClassification": {
+            "accountProviderClassification": "BANK",
+            "accountSubtype": "CREDIT_CARD",
+            "accountType": "PAYMENT_CARD"
+          },
+          "enquiryAmount": {
+            "currency": "AUD",
+            "unit": "MINOR",
+            "value": 200000
+          },
+          "enquiryDate": "2024-05-01"
+        }
+      ],
+      "publicInformationHistory": [
+        {
+          "amount": {
+            "currency": "AUD",
+            "unit": "MINOR",
+            "value": 200000
+          },
+          "effectiveFrom": "2024-04-01",
+          "status": "OUTSTANDING",
+          "type": "INSOLVENCY",
+          "updatedAt": "2024-05-01"
+        }
+      ],
+      "scores": [
+        {
+          "contributingFactors": [
+            {
+              "contributingFactor": "ADVERSE_INFORMATION",
+              "impactDirection": "POSITIVE",
+              "impactLevel": "MODERATE"
+            },
+            {
+              "contributingFactor": "BANKRUPTCY",
+              "impactDirection": "NEGATIVE",
+              "impactLevel": "HIGH"
+            }
+          ],
+          "score": {
+            "score": 600,
+            "scoreIdentifier": "ONE_1.0_XY_CR"
+          }
+        }
+      ],
+      "summaryAttributes": [
+        {
+          "description": "Number of closed personal loan accounts in the last 24 months",
+          "identifier": "CX0021_gpl_ac_cls_24m",
+          "value": "2"
+        }
+      ]
+    },
+    "creditBureauCheckStatus": "MATCH",
+    "creditBureauCheckType": "HARD",
+    "externalSearchIdentifier": "00bc3278-95e1-40b4-9a3d-2ee6d3ada7c7"
+  }
+}

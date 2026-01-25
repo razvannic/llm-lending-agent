@@ -1,0 +1,29 @@
+meta {
+  name: List terms and conditions documents
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/terms?accountProductId={{savingsProductId}}&currentVersionOnly=true
+  body: json
+  auth: inherit
+}
+
+params:query {
+  accountProductId: {{savingsProductId}}
+  currentVersionOnly: true
+}
+
+headers {
+  Accept: application/json
+}
+
+tests {
+  let responseData = res.getBody();
+  bru.setVar("savingsTermsAndConditionsDocumentId", responseData[0].versions[0].id);
+}
+
+docs {
+  List all terms and conditions documents and their associated versions for an account product.
+}

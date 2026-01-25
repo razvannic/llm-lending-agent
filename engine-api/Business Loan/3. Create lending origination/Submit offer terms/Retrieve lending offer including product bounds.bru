@@ -1,0 +1,62 @@
+meta {
+  name: Retrieve lending offer including product bounds
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/persons/:personId/lending-applications/:lendingApplicationId/offer-actions/:actionId
+  body: none
+  auth: inherit
+}
+
+params:path {
+  personId: {{personId}}
+  lendingApplicationId: {{lendingApplicationId}}
+  actionId: {{actionId}}
+}
+
+headers {
+  Accept: application/json
+}
+
+script:post-response {
+  let json = res.getBody();
+  
+  let arrearsInterestRate = 3.0;
+  if (json.minArrearsInterestRate && json.maxArrearsInterestRate){
+    arrearsInterestRate = getRandomIntInclusive(json.minArrearsInterestRate, json.maxArrearsInterestRate);
+  }
+  bru.setVar("arrearsInterestRate", arrearsInterestRate);
+  
+  let interestRate = 3.0;
+  if (json.minInterestRate && json.maxInterestRate){
+    interestRate = getRandomIntInclusive(json.minInterestRate, json.maxInterestRate);
+  }
+  bru.setVar("interestRate", interestRate);
+  bru.setVar("numberOfRepayments", 40);
+  
+  let offerAmount = 500000;
+  if (json.minLoanPrincipal && json.maxLoanPrincipal){
+    offerAmount = getRandomIntInclusive(json.minLoanPrincipal.value, json.maxLoanPrincipal.value);
+  }
+  bru.setVar("offerAmount", offerAmount);
+  
+  function getRandomIntInclusive(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1) + min);
+  }
+}
+
+docs {
+  
+  Fetch details of the lending product which would be used to create the offer terms including any previously selected offer in the context of an offer action.
+  
+  :::warning
+  
+   This endpoint is not yet implemented and subject to change.
+  
+  :::
+  
+}

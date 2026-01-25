@@ -1,0 +1,10 @@
+meta {
+  name: Create device
+}
+
+script:pre-request {
+  if (!bru.getCollectionVar("countryCode") || 
+      !bru.getCollectionVar("linkPhoneNumber")) {
+    throw new Error('Collection variable countryCode or linkPhoneNumber not present');
+  }
+}

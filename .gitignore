@@ -1,0 +1,8 @@
+node_modules/
+target/
+build/
+out/
+.terraform/
+*.zip
+*.jar
+*.log

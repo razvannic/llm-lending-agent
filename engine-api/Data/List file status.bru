@@ -1,0 +1,61 @@
+meta {
+  name: List file status
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/data/:date
+  body: none
+  auth: inherit
+}
+
+params:path {
+  date: {{date}}
+}
+
+headers {
+  x-data-agent-id: {{data-agent}}
+  x-engine-api-key: {{apiKey}}
+}
+
+script:pre-request {
+  const crypto = require('crypto');
+  const NodeRSA = require('node-rsa');
+  
+  const dataPrivateKeyPem = bru.getGlobalEnvVar("dataPrivateKeyPem");
+  const dataPublicKeyPem = bru.getGlobalEnvVar("dataPublicKeyPem");
+  const generateNewKeyPairString = bru.getGlobalEnvVar("generateNewKeyPair");
+  const generateNewKeyPair = (generateNewKeyPairString === "true");
+  
+  if ((!dataPrivateKeyPem || !dataPublicKeyPem) || generateNewKeyPair) {
+      console.log("Generating new RSA key pair...");
+  
+      const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
+          modulusLength: 2048,
+          publicKeyEncoding: {
+              type: 'spki',
+              format: 'pem',
+          },
+          privateKeyEncoding: {
+              type: 'pkcs8',
+              format: 'pem',
+          },
+      });
+  
+      const privateKeyPemString = privateKey.toString();
+      const publicKeyPemString = publicKey.toString();
+  
+      bru.setGlobalEnvVar('dataPrivateKeyPem', privateKeyPemString);
+      bru.setGlobalEnvVar('dataPublicKeyPem', publicKeyPemString);
+  
+      console.log(`Private/Public key pair created`);
+  } else {
+      console.log("Keys already exist. Reusing existing keys.");
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

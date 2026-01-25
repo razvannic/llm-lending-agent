@@ -1,0 +1,35 @@
+meta {
+  name: Initate account access
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/devices/{{deviceId}}/account-access
+  body: json
+  auth: inherit
+}
+
+params:query {
+  ~suppliedPhrase: <string>
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "method": "IDV"
+  }
+}
+
+script:post-response {
+  let responseData = res.getBody();
+  bru.setVar("videoPhraseId", responseData.phraseId);
+}
+
+docs {
+  Generate a phrase for a user to say in an identity verification video. In the request body, specify the `action` that this request relates to, for example `ONBOARDING`.<br><br>Send the returned phrase to the user.
+}

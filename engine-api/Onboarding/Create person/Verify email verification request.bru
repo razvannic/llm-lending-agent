@@ -1,0 +1,26 @@
+meta {
+  name: Verify email verification request
+  type: http
+  seq: 11
+}
+
+put {
+  url: {{baseUrl}}/api/email-verification/verify
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "emailVerificationId": "{{emailVerificationId}}"
+  }
+}
+
+docs {
+  Update a person's income information. If the income information doesn't already exist, it is created.
+}

@@ -1,0 +1,10 @@
+meta {
+  name: Create person transaction account
+  seq: 4
+}
+
+script:pre-request {
+  if (!bru.getGlobalEnvVar('personId')) {
+    throw new Error('Global variable personId not present');
+  }
+}

@@ -1,0 +1,41 @@
+meta {
+  name: Submit consents for a lending application action
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{baseUrl}}/api/persons/:personId/lending-applications/:lendingApplicationId/consent-actions/:actionId
+  body: json
+  auth: inherit
+}
+
+params:path {
+  personId: {{personId}}
+  lendingApplicationId: {{lendingApplicationId}}
+  actionId: {{actionId}}
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "consentIds": {{consentIds}}
+  }
+}
+
+docs {
+  As part of every lending application, there are associated consent sets, determined by by the product. These can be in a document- or text-based format. The act of consenting
+  to each consent is recorded as part of the application.
+  
+  Use this endpoint to submit a customer's agreement to the consents which have been presented to them.
+  
+  
+  :::warning
+   This endpoint is not yet implemented and subject to change.
+  :::
+  
+}

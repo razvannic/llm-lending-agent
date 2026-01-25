@@ -1,0 +1,96 @@
+meta {
+  name: Retrieve questions and answers for a lending application action
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/persons/:personId/lending-applications/:lendingApplicationId/question-actions/:actionId
+  body: none
+  auth: inherit
+}
+
+params:path {
+  personId: {{personId}}
+  lendingApplicationId: {{lendingApplicationId}}
+  actionId: {{actionId}}
+}
+
+headers {
+  Accept: application/json
+  ~Accept-Language: <string>
+}
+
+script:post-response {
+  let json = res.getBody();
+  let questionAndAnswers = json.questionAndAnswers;
+  let predefinedResults=[];
+  let moneyResults=[];
+  let sortAnswersByPriority = true;
+  
+  let predefinedAnswers = questionAndAnswers.filter(function (el) {
+      return el.answerType == "PREDEFINED";
+  });
+  
+  predefinedAnswers.forEach(el => {
+      let answers = []
+      if (el.question.isMultipleChoice){
+          
+      } else {
+        let a = el.answers;
+        if (sortAnswersByPriority){
+          a.sort((a, b) => {
+            return b.priority > a.priority;
+          });
+        } 
+        let first = a[0];
+        console.log("Prefined Question ("+el.question.questionId+"): "+el.question.displayText + ", answer: "+first.answerValue);
+        console.log(el);
+        answers.push(first.answerId);
+      }
+      predefinedResults.push({
+          "questionId": el.question.questionId,
+          "selectedAnswersIds": answers
+      })
+  })
+  
+  let moneyAnswers = questionAndAnswers.filter(function (el) {
+      return el.answerType == "MONEY_FREE_TEXT";
+  });
+  moneyAnswers.forEach(el => {
+      let answer = el.answer;
+      let minimumAmount = answer.minimumAmount.value;
+      let maximumAmount = answer.maximumAmount.value;
+      const minCeiled = Math.ceil(minimumAmount);
+      const maxFloored = Math.floor(minCeiled+10000);
+      let randonAmount = Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled);
+      console.log("Money Question ("+el.question.questionId+"): "+el.question.displayText + ", answer: "+randonAmount+" (min: "+el.answer.minimumAmount.value+", max: "+el.answer.maximumAmount.value+")");
+      console.log(el);
+      moneyResults.push({
+          "questionId": el.question.questionId,
+          "answerValue": randonAmount
+      })
+  })
+  
+  console.log(" ");
+  console.log("If some of these are used in decisioning then you might need to take the json output and amend the asnwers.");
+  
+  console.log("predefinedAnswers", JSON.stringify(predefinedResults));
+  console.log("freeTextAnswers", JSON.stringify(moneyResults));
+  bru.setVar("predefinedAnswers", JSON.stringify(predefinedResults));
+  bru.setVar("freeTextAnswers", JSON.stringify(moneyResults));
+  
+  
+}
+
+docs {
+  When a lending application has pending actions of type QUESTION_AND_ANSWERS. This API will return all questions associated to that specific actionId. 
+  The response will contain all of the questions a customer is required to answer to complete that specific action as part of their lending application.
+  
+  :::warning
+  
+   This endpoint is not yet implemented and subject to change.
+  
+  :::
+  
+}

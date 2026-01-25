@@ -1,0 +1,74 @@
+meta {
+  name: Auth - User
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{mobileUrl}}/auth-api/api/v1/devices/a6613bd9-f80a-45fd-a658-95855ae3acfe/user
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: {{authorisationHeader}}
+  Digest: {{digestHeader}}
+  Date: {{dateHeader}}
+  Content-Type: application/json
+}
+
+script:pre-request {
+  const NodeRSA = require('node-rsa');
+  const crypto = require('crypto');
+  
+  const privateKeyPem = bru.getGlobalEnvVar('privateKeyPem');
+  const publicKeyPem = bru.getGlobalEnvVar('publicKeyPem');
+  const deviceId = bru.getGlobalEnvVar('deviceId');
+  
+  const privateKey = new NodeRSA(privateKeyPem, { signingScheme: 'pkcs1-sha256' });
+  const publicKey = new NodeRSA(publicKeyPem, { signingScheme: 'pkcs1-sha256' });
+  
+  // Request details
+  const method = req.getMethod().toLowerCase();
+  const body = req.getBody();
+  const url = req.getUrl();
+  const path = url.split('-api')[1];
+  const now = new Date();
+  const dateHeader = now.toUTCString();
+  const requestBody = JSON.stringify(body);
+  
+  let digestString;
+  if (method === 'put' || method === 'post') {
+    const hash = crypto.createHash('sha512').update(requestBody).digest('base64');
+    digestString = hash;
+  } else {
+    digestString = "X";
+  }
+  
+  const payload = `Date: ${dateHeader}
+  Digest: ${digestString}
+  (request-target): ${method} ${path}`;
+  console.log("Signature payload: " + payload);
+  
+  const signature = privateKey.sign(Buffer.from(payload, 'utf-8'), 'base64');
+  const authString = `Signature keyid="${deviceId}", algorithm="rsa-sha256",headers="Date Digest (request-target)",signature="${signature}"`;
+  
+  console.log("\nUrl: " + url);
+  bru.setEnvVar("dateHeader", dateHeader);
+  console.log("\nDate header: " + dateHeader);
+  
+  bru.setEnvVar("digestHeader", digestString);
+  console.log("Digest header: " + digestString);
+  
+  bru.setEnvVar("authorisationHeader", authString);
+  console.log("Authorization header: " + authString);
+  
+  bru.setEnvVar("body", requestBody);
+  req.setBody(requestBody)
+  console.log("\nRequest body: " + requestBody);
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

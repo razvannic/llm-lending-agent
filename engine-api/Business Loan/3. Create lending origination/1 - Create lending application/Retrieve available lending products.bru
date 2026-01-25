@@ -1,0 +1,51 @@
+meta {
+  name: Retrieve available lending products
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/lending-products
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  ~Accept-Language: <string>
+}
+
+script:post-response {
+  let lendingProducts = res.getBody().lendingProducts;
+  
+  if (!bru.getCollectionVar('lendingProductId')) {
+    throw new Error('Collection variable lendingProductId has not been set, select the appropriate product from this response and set the collection variable.');
+  }
+  
+  const lendingProductId = bru.getCollectionVar("lendingProductId");
+
+  const aps = lendingProducts.filter(function (el) {
+      return el.lendingProductId == lendingProductId;
+  });
+  
+  if (aps.length > 0){
+      console.log("Using lending product: "+lendingProductId);
+  } else {
+      return Error("No Lending Products found")
+  }
+  
+  
+}
+
+docs {
+  Use this endpoint to retrieve lending products that are available for origination. 
+  
+  A lending product is available for origination if it has an active origination configuration and linked eligibility assessment in Management Portal.
+  
+  :::warning
+  
+   This endpoint is not yet implemented and subject to change.
+  
+  :::
+  
+}

@@ -1,0 +1,13 @@
+meta {
+  name: Link device
+}
+
+auth {
+  mode: inherit
+}
+
+script:pre-request {
+  if (!bru.getGlobalEnvVar('deviceId')) {
+    throw new Error('Variable deviceId not present');
+  }
+}

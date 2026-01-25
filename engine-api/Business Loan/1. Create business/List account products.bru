@@ -1,0 +1,42 @@
+meta {
+  name: List account products
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/account-products
+  body: none
+  auth: inherit
+}
+
+headers {
+  Accept: application/json
+}
+
+script:post-response {
+  let accountProducts = res.getBody();
+  let accountProductType = "TRANSACTION_ACCOUNT";
+  let accountCurrency = bru.getVar("currencyCode");
+  let accountLegalEntity = "BUSINESS"
+  
+  var aps = accountProducts.filter(function (el) {
+      return el.accountProductType == accountProductType &&
+          el.currency == accountCurrency &&
+          el.legalEntity == accountLegalEntity;
+  });
+  
+  if (aps.length > 0){
+      let ta = aps[0]
+      console.log("Using accountProductId: "+ta.accountProductId)
+      bru.setVar("accountProductId", ta.accountProductId);
+  } else {
+      return Error("No Account Products found")
+  }
+  
+  
+}
+
+docs {
+  Get a list of available account products. An account product is a configured set of features (such as currency, supported payment channels, and interest rate) that you offer to customers.
+}

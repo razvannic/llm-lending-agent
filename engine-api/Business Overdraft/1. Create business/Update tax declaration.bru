@@ -1,0 +1,27 @@
+meta {
+  name: Update tax declaration
+  type: http
+  seq: 7
+}
+
+put {
+  url: {{baseUrl}}/api/businesses/:businessId/tax-declarations
+  body: json
+  auth: none
+}
+
+params:path {
+  businessId: {{businessId}}
+}
+
+body:json {
+  {
+    "taxDeclarationAnswer": "YES",
+    "taxDeclarationCountries": [
+      {
+        "countryCode": "{{countryCode}}",
+        "taxIdentificationNumber": "1212121212"
+      }
+    ]
+  }
+}

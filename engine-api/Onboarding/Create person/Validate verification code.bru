@@ -1,0 +1,47 @@
+meta {
+  name: Validate verification code
+  type: http
+  seq: 1
+}
+
+put {
+  url: {{baseUrl}}/api/devices/{{deviceId}}/verification-codes/validate
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+  ~x-device-id: 
+}
+
+body:json {
+  {
+      "code": "{{smsOTP}}"
+  }
+}
+
+script:pre-request {
+  // In MP you can configure that certain phoneNumber patterns are bypassed.
+  var sandboxPhoneNumberOverride = bru.getCollectionVar("sandboxPhoneNumberOverride");
+  if (sandboxPhoneNumberOverride == "yes"){
+    bru.setVar("smsOTP", "123456");
+  }
+  
+}
+
+script:post-response {
+  bru.setGlobalEnvVar("smsOTP", "provide-input")
+}
+
+docs {
+  
+  Verify a device with an OTP code as part of the initial application process.
+  
+  If a customer enters the code incorrectly, this invalidates any existing codes. For example, if a customer accidentally enters an incorrect code, and then enters the correct code, the correct code won't work.
+  
+  However, sending additional codes to a customer **doesn't** invalidate any existing codes. For example, a customer who requests a second code could still use the first code for validation (as long as they haven't entered an incorrect code).
+  
+  By default, codes expire 30 minutes after they are sent. If you're using the Twilio SMS integration, this duration is configurable.
+}

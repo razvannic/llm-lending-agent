@@ -1,0 +1,39 @@
+meta {
+  name: Create onboarding checks
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/persons/{{personId}}/onboarding/checks
+  body: none
+  auth: inherit
+}
+
+headers {
+  Accept: application/json
+}
+
+script:pre-request {
+  bru.sleep(2000);
+}
+
+docs {
+  Create checks that must pass before a person can be onboarded.
+  
+  Call this endpoint after all required information relating to a person has been gathered and stored. 
+  
+  To check whether any information is outstanding, [get the status of outstanding actions](/api/reference/operation/getOutstandingActions/). Anything returned as `REQUIRED` is outstanding, meaning that you won't be able to create onboarding checks.
+  
+  Checks are created asynchronously after receiving this request. They are created conditionally based on the following logic:
+  
+  | <div style="width:150px">Check</div> | Logic |
+  | ------------ | --- |
+  | `PERSONAL_DETAILS` | Always created, unless this check type already exists for the person. It represents a check of all personal details, such as name, date of birth, and employment details. |
+  | `DOCUMENT` | Created if an ID document has been uploaded and does not yet have a decision recorded against it. |
+  | `VIDEO` | Created if an identity video has been uploaded and does not yet have a decision recorded against it. |
+  | `SANCTION` | Created if Engine is your sanction check provider and there are sanctions matches that require manual review. |
+  | `KNOWN_FACES` | Created if configured in your Engine environment. |
+  | `DEVICE` | Created if configured in your Engine environment. |
+  
+}

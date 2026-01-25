@@ -1,0 +1,121 @@
+meta {
+  name: Create a business
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/persons/:personId/businesses
+  body: json
+  auth: none
+}
+
+params:path {
+  personId: {{personId}}
+}
+
+body:json {
+  {
+    "business": {
+      "addresses": [
+        {
+          "type": "CORRESPONDENCE",
+          "address": {{address}}
+        },
+        {
+          "type": "REGISTERED",
+          "address": {{address}}
+        }
+      ],
+      "businessName": "{{randomBusinessName}}",
+      "businessType": "{{businessType}}",
+      "entityType": "BUSINESS",
+      "owningEntities": [
+        {
+          "entityType": "INDIVIDUAL",
+          "owningEntity": {
+            "entityType": "INDIVIDUAL",
+            "firstName": "{{randomFirstName}}",
+            "lastName": "{{randomLastName}}",
+            "dateOfBirth": "{{DOB}}"
+          },
+          "relationshipType": [
+            "DIRECTOR",
+            "BENEFICIAL_OWNER"
+          ]
+        }
+      ],
+      "registrationDate": "{{registrationDate}}",
+      "registrationDetails": [
+        {
+          "registrationCountry": "{{countryCodeOverride}}",
+          "registrationNumber": "{{registrationNumber}}",
+          "registrationNumberType": "ABN"
+        }
+      ],
+      "status": "{{businessStatus}}",
+      "businessSubType": "LIBERAL_PROFESSIONAL",
+      "businessSector": "{{sector}}"
+    },
+    "accountProduct": {
+      "accountProductId": "{{accountProductId}}"
+    }
+  }
+}
+
+script:pre-request {
+  let countryCodeOverride = "AU";
+  const randomNumber = Math.round(Math.random() * 100000000);
+  let businessName = bru.getCollectionVar("businessName")
+  let businessType = bru.getCollectionVar("businessType")
+  if (!businessName){
+    if (businessType == "COMPANY"){
+      businessName = "Business"
+    } else if (businessType == "SOLE_TRADER"){
+      businessName = "Sole Trader"
+    }
+  }
+  var firstName = bru.getCollectionVar("firstName")
+  if (!firstName){
+    firstName = "Test"
+  }
+  var lastName = bru.getCollectionVar("lastName")
+  if (!lastName){
+    lastName = "Test"
+  }
+  
+  var randomBusinessName = firstName+" "+lastName+" "+businessName+" - "+randomNumber;
+  var randomFirstName = firstName;
+  var randomLastName = lastName;
+  var randomExampleEmail = businessName+"@"+randomNumber+".com"
+  
+  bru.setVar("randomBusinessName", randomBusinessName)
+  bru.setVar("randomFirstName",randomFirstName)
+  bru.setVar("randomLastName",randomLastName)
+  bru.setVar("randomExampleEmail",randomExampleEmail)
+  
+  let registrationNumber = bru.getCollectionVar("registrationNumber");
+  if (registrationNumber){
+    bru.setVar("registrationNumber", registrationNumber)
+  } else {
+    bru.setVar("registrationNumber", randomNumber)
+  }
+  
+  let businessStatus = bru.getCollectionVar("businessStatus");
+  if (businessStatus){
+    bru.setVar("businessStatus", businessStatus)
+  } else {
+    bru.setVar("businessStatus", "ACTIVE")
+  }
+  
+  bru.setVar("DOB","1980-06-30")
+  bru.setVar("registrationDate","2000-06-30")
+  bru.setVar("countryCodeOverride", countryCodeOverride)
+
+}
+
+script:post-response {
+  let responseData = res.getBody();
+  bru.setVar("businessId", responseData.businessId);
+  bru.setGlobalEnvVar("businessId", responseData.businessId);
+}

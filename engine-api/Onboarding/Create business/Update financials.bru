@@ -1,0 +1,28 @@
+meta {
+  name: Update financials
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{baseUrl}}/api/businesses/:businessId/financials
+  body: json
+  auth: none
+}
+
+params:path {
+  businessId: {{businessId}}
+}
+
+headers {
+  x-device-id: {{deviceId}}
+}
+
+body:json {
+  {
+    "expectedDeposits": {
+      "lowerBound": "100000",
+      "upperBound": "200000"
+    }
+  }
+}

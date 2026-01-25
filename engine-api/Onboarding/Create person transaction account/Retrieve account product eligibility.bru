@@ -1,0 +1,53 @@
+meta {
+  name: Retrieve account product eligibility
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/persons/{{personId}}/account-products
+  body: none
+  auth: inherit
+}
+
+params:query {
+  ~companyId: @9Ab76XEYfVEcFL5r5GBZMpurmtqT-gyotFh=
+  ~mobileNumber: <string>
+  ~offset: <integer>
+  ~limit: 100
+}
+
+headers {
+  Accept: application/json
+}
+
+script:post-response {
+  let accountProducts = res.getBody();
+  let accountProductId = bru.getVar("accountProductId");
+
+  var aps = accountProducts.filter(function (el) {
+      return el.accountProductId == accountProductId;
+  });
+
+  if (aps.length > 0){
+      let ap = aps[0]
+      if (!ap.isEligible){
+          return Error("Account Product not eligible")
+      } else {
+          console.log("Account Product eligible")
+      }
+  } else {
+      return Error("No Account Products found")
+  }
+
+
+}
+
+docs {
+  List accounts that match the supplied criteria. You must filter the results by specifying one of the following parameters:
+  
+  * `personId` (deprecated)
+  * `companyId` (deprecated)
+  * `mobileNumber` (not yet implemented)
+  
+}

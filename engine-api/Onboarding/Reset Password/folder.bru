@@ -1,0 +1,10 @@
+meta {
+  name: Reset Password
+  seq: 9
+}
+
+script:pre-request {
+  if (!bru.getGlobalEnvVar('personId')) {
+    throw new Error('Global variable personId not present');
+  }
+}

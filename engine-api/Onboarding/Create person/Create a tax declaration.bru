@@ -1,0 +1,34 @@
+meta {
+  name: Create a tax declaration
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/api/persons/{{personId}}/tax-declarations
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "taxDeclarationAnswer": "YES",
+    "taxDeclarationCountries": [
+      {
+        "countryCode": "{{countryCode}}",
+        "taxIdentificationNumber": "12345678"
+      }
+    ]
+  }
+}
+
+docs {
+  Submit a tax declaration if required as part of your KYC process.
+  For example, you might require that all overseas US citizens submit their tax liabilities as part of the onboarding process.
+  
+}

@@ -1,0 +1,40 @@
+meta {
+  name: Retrieve documents for a lending application action
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/persons/:personId/lending-applications/:lendingApplicationId/document-orchestration-actions/:actionId
+  body: none
+  auth: inherit
+}
+
+params:path {
+  personId: {{personId}}
+  lendingApplicationId: {{lendingApplicationId}}
+  actionId: {{actionId}}
+}
+
+headers {
+  Accept: application/json
+  ~Accept-Language: <string>
+}
+
+script:post-response {
+  let json = res.getBody();
+  let consents = json.documents;
+  const list = consents.map(element => element.documentId)
+  bru.setVar("documentIds", JSON.stringify(list));
+}
+
+docs {
+  Use this endpoint to retrieve all documents that must be viewed and signed as part of a lending application. Required in order for pending actions of type VIEW_AND_SIGN_DOCUMENTS to be completed. 
+  
+  Documents can either be static - pre-configured in product configuration, or generated - created on-demand. Both types will be accessed via the url in the response.
+  
+  :::warning
+   This endpoint is not yet implemented and subject to change.
+  :::
+  
+}

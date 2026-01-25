@@ -1,0 +1,15 @@
+meta {
+  name: Examples
+}
+
+auth {
+  mode: inherit
+}
+
+script:pre-request {
+  if (!bru.getGlobalEnvVar("privateKeyPem") || 
+      !bru.getGlobalEnvVar("publicKeyPem") || 
+      !bru.getGlobalEnvVar("deviceId")) {
+    throw new Error('Global variable privateKeyPem, publicKeyPem or deviceId not present. You can also set generateNewKeyPair (true|false) to generate a new key pair');
+  }
+}

@@ -1,0 +1,92 @@
+meta {
+  name: Lending Origination
+  seq: 1
+}
+
+headers {
+  x-engine-api-key: {{apiKey}}
+}
+
+auth {
+  mode: none
+}
+
+vars:pre-request {
+  firstName: Mike
+  lastName: Engine
+  password: Engine12345#
+  businessType: COMPANY
+  lendingProductId: 11ba0b97-cbd5-474a-9683-9f2e25130a3c
+  ~freeTextAnswersOverride: [{"questionId":"16792687-5791-4641-aaa6-60fedc804788","answerValue":50000}]
+  ~registrationNumber: 1122334455
+}
+
+script:pre-request {
+  if (!bru.getGlobalEnvVar('countryCode')) {
+    throw new Error('Global variable countryCode not present');
+  }
+  
+  bru.setVar("employmentSector","WEBSITE_DEVELOPMENT");
+  bru.setVar("sourceOfFunds", "MONTHLY_SALARY");
+  
+  if (bru.getGlobalEnvVar("countryCode")=="AU") {
+    bru.setVar("address", "{\"locality\": \"local\",\"postcode\": \"1411\",\"addressFormat\": \"AUSTRALIA\",\"line1\": \"12 A Street\",\"line2\": \"Local NSW 1411\",\"streetNumber\": \"1\",\"streetName\": \"A Street\",\"state\": \"NSW\"}");
+    bru.setVar("currencyCode", "AUD");
+    bru.setVar("region", "AUD");
+    bru.setVar("employmentSector", "PHOTOGRAPHER");
+    bru.setVar("sourceOfFunds", "EMPLOYMENT_INCOME");
+  }
+  
+  if (bru.getGlobalEnvVar("countryCode")=="GB") {
+    bru.setVar("address","{\"addressFormat\": \"UK\",\"county\": \"Devon\",\"line1\": \"3 Main Street\",\"postTown\": \"Plymouth\",\"postcode\": \"PL755NC\"}");
+    bru.setVar("currencyCode", "GBP");
+    bru.setVar("region", "UK");
+  }
+  
+  if (bru.getGlobalEnvVar("countryCode")=="UAE") {
+    bru.setVar("address", "{\"addressFormat\": \"INTERNATIONAL\",\"line1\": \"164 Al Jaddaf Walk\",\"city\": \"Dubai\",\"countryCode\": \"AE\", \"line 2\": \"16961\", \"line 3\":\"United Arab Emirates\", \"postcode\":\"1111\"}");
+    bru.setVar("currencyCode", "DIR");
+    bru.setVar("region", "UAE");
+  }
+  
+  if (bru.getGlobalEnvVar("countryCode")=="QA") {
+    bru.setVar("address", "{\"addressFormat\": \"INTERNATIONAL\",\"line1\": \"Oasis Gate 2\",\"city\": \"Doha\",\"countryCode\": \"QA\", \"line 2\": \"Al Khaleej\", \"line 3\":\"Qatar\", \"postcode\":\"7GP9\"}");
+    bru.setVar("currencyCode", "QAR");
+    bru.setVar("region", "Qatar");
+  }
+}
+
+docs {
+  This represents the end to end flow needed to satisfy the Lending Origination journey. Ahead of using the flow:
+  
+  - Select the environment you wish to integrate with.
+      
+  - Set the `apiKey` variable for the selected environment (use the `Current value` field to exclude the value from other users). For a more secure approach store the `apiKey` in your local [Postman Vault](https://learning.postman.com/docs/sending-requests/postman-vault/postman-vault-secrets/) (example: `nestboxApiKey`) and set the `apiKey` variable as per above (example: `{{vault:nestboxApiKey}}` )
+      
+  
+  <img src="https://content.pstmn.io/19b0cb3b-35e4-461c-ac23-1ca2bb205a70/aW1hZ2UucG5n" width="1744" height="338">
+  
+  - The following environment variables should be updated:
+      
+  
+  | **Name** | **Description** |
+  | --- | --- |
+  | `lendingProductId` | With more and more lending products being added it is getting harder to predict the right product to use, it also fails much later in the journey and can be frustrating. |
+  
+  - The following collection variables should be updated:
+  
+  It assumes that:
+  
+  - a `Device` was registered.
+      
+  - a `Person` was created and all onboarding checks were satisfied.
+      
+  
+  As part of this journey we create a transaction account followed by lending origination which should yield an `In-life` loan to the user.
+  
+  To execute the flow:
+  
+  - Run the `Create transaction account` folder.
+      
+  - Run the `Create lending origination` folder.
+}

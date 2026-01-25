@@ -1,0 +1,24 @@
+meta {
+  name: Submit ongoing business search result
+  type: http
+  seq: 8
+}
+
+put {
+  url: {{baseUrl}}/api/businesses/:businessId/search/ongoing/result
+  body: json
+  auth: none
+}
+
+params:path {
+  businessId: {{businessId}}
+}
+
+body:json {
+  {
+    "businessSearchType": "SCREENING",
+    "screeningSearchStatus": "SUCCESS",
+    "matches": [],
+    "externalSearchIdentifier": "cf67b798-6458-48f9-b1a6-dd240c0fc58b"
+  }
+}

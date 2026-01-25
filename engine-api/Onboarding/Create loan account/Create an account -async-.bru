@@ -1,0 +1,46 @@
+meta {
+  name: Create an account -async-
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/api/persons/{{personId}}/account-holders/{{accountHolderId}}/account-creation-requests
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+      "accountName": "Personal Loan",
+      "accountProductId": "{{loanProductId}}",
+      "accountProductType": "LOAN_ACCOUNT",
+      "acceptanceTimestamp": "{{currenttimems}}",
+      "disbursementDate": "{{disbursementDate}}",
+      "loanId": "{{loanId}}",
+      "paymentDay": {
+          "paymentDayType": "DAY_OF_MONTH_PAYMENT_DAY",
+          "monthDay": "{{currentdateday}}",
+          "monthsBetweenPayments": 1,
+          "referenceFirstPayment": "{{referenceFirstPayment}}"
+      },
+      "targetAccountId": "{{accountId}}"
+  }
+}
+
+script:pre-request {
+  var moment = require('moment');
+  bru.setVar('referenceFirstPayment', moment().add(29, 'days').format(("YYYY-MM-DD")));
+  bru.setVar('disbursementDate', moment().format(("YYYY-MM-DD")));
+  //bru.setVar('disbursementDate', moment().add(1, 'day').format(("YYYY-MM-DD")));
+  bru.setVar('currenttimems', moment().format(("YYYY-MM-DDTHH:mm:ssZ")));
+}
+
+docs {
+  Create an account.
+}

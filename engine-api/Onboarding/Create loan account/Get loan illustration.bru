@@ -1,0 +1,62 @@
+meta {
+  name: Get loan illustration
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{baseUrl}}/api/loans/illustration
+  body: json
+  auth: inherit
+}
+
+params:query {
+  ~companyId: @9Ab76XEYfVEcFL5r5GBZMpurmtqT-gyotFh=
+  ~mobileNumber: <string>
+  ~offset: <integer>
+  ~limit: 100
+}
+
+headers {
+  Accept: application/json
+}
+
+body:json {
+  {
+    "amount": {
+      "currency": "{{currencyCode}}",
+      "unit": "MINOR",
+      "value": {{loanAmountMinor}}
+    },
+    "disbursalDate": "{{currentdate}}",
+    "interestCalculationType": "EFFECTIVE",
+    "interestCompoundingFrequency": "DAILY",
+    "interestRate": 4.99,
+    "interestRateType": "FIXED",
+    "numberOfRepayments": 12,
+    "paymentDay": {
+      "paymentDayType": "DAY_OF_MONTH_PAYMENT_DAY",
+      "monthDay": "{{currentdateday}}",
+      "monthsBetweenPayments": 1,
+      "referenceFirstPayment": "{{referenceFirstPayment}}"
+    },
+    "repaymentFrequency": "MONTHLY",
+    "repaymentType": "EQUAL_REPAYMENTS"
+  }
+}
+
+script:pre-request {
+  var moment = require('moment');
+  bru.setVar('currentdate', moment().format(("YYYY-MM-DD")));
+  bru.setVar('currentdateday', moment().format(("DD")));
+  bru.setVar('referenceFirstPayment', moment().add(1, 'M').format(("YYYY-MM-DD")));
+}
+
+docs {
+  List accounts that match the supplied criteria. You must filter the results by specifying one of the following parameters:
+  
+  * `personId` (deprecated)
+  * `companyId` (deprecated)
+  * `mobileNumber` (not yet implemented)
+  
+}

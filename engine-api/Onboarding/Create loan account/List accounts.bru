@@ -1,0 +1,32 @@
+meta {
+  name: List accounts
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{baseUrl}}/api/accounts?personId={{personId}}
+  body: none
+  auth: inherit
+}
+
+params:query {
+  personId: {{personId}}
+  ~companyId: @9Ab76XEYfVEcFL5r5GBZMpurmtqT-gyotFh=
+  ~mobileNumber: <string>
+  ~offset: <integer>
+  ~limit: 100
+}
+
+headers {
+  Accept: application/json
+}
+
+docs {
+  List accounts that match the supplied criteria. You must filter the results by specifying one of the following parameters:
+  
+  * `personId` (deprecated)
+  * `companyId` (deprecated)
+  * `mobileNumber` (not yet implemented)
+  
+}

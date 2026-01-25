@@ -1,0 +1,44 @@
+meta {
+  name: Create an account -async-
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/api/persons/{{personId}}/account-holders/{{accountHolderId}}/account-creation-requests
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+      "accountName": "Personal FTD Saver",
+      "accountProductId": "{{savingsProductId}}",
+      "accountProductType": "SAVINGS_ACCOUNT",
+      "initialFunding": {
+          "accountId": "{{accountId}}",
+          "fundingAmount": {
+              "currency": "{{currencyCode}}",
+              "unit": "MINOR",
+              "value": "{{savingsAmountMinor}}"
+          }
+      }
+  }
+}
+
+script:pre-request {
+  var moment = require('moment');
+  bru.setVar('referenceFirstPayment', moment().add(29, 'days').format(("YYYY-MM-DD")));
+  //bru.setVar('disbursementDate', moment().format(("YYYY-MM-DD")));
+  bru.setVar('disbursementDate', moment().add(1, 'day').format(("YYYY-MM-DD")));
+  bru.setVar('currenttimems', moment().format(("YYYY-MM-DDTHH:mm:ssZ")));
+}
+
+docs {
+  Create an account.
+}

@@ -1,0 +1,40 @@
+meta {
+  name: Retrieve person eligibility
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/persons/{{personId}}/eligibility
+  body: none
+  auth: inherit
+}
+
+params:query {
+  ~companyId: @9Ab76XEYfVEcFL5r5GBZMpurmtqT-gyotFh=
+  ~mobileNumber: <string>
+  ~offset: <integer>
+  ~limit: 100
+}
+
+headers {
+  Accept: application/json
+}
+
+script:post-response {
+  let isEligible = res.getBody().isEligible;
+  if (!isEligible){
+      return Error("Person not eligible")
+  } else {
+      console.log("Person eligible")
+  }
+}
+
+docs {
+  List accounts that match the supplied criteria. You must filter the results by specifying one of the following parameters:
+  
+  * `personId` (deprecated)
+  * `companyId` (deprecated)
+  * `mobileNumber` (not yet implemented)
+  
+}

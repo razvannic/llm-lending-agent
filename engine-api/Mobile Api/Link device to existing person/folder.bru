@@ -1,0 +1,10 @@
+meta {
+  name: Link device to existing person
+}
+
+script:pre-request {
+  if (!bru.getGlobalEnvVar("privateKeyPem") || 
+      !bru.getGlobalEnvVar("publicKeyPem")) {
+    throw new Error('Global variable privateKeyPem or publicKeyPem not present. You can also set generateNewKeyPair (true|false) to generate a new key pair');
+  }
+}

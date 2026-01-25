@@ -1,0 +1,10 @@
+meta {
+  name: Create business
+  seq: 5
+}
+
+script:pre-request {
+  if (!bru.getGlobalEnvVar('personId')) {
+    throw new Error('Global variable personId not present');
+  }
+}

@@ -1,0 +1,41 @@
+meta {
+  name: Retrieve maturity details for an account
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{baseUrl}}/api/account-products/{{savingsProductId}}/maturity-quote
+  body: json
+  auth: inherit
+}
+
+params:query {
+  ~companyId: @9Ab76XEYfVEcFL5r5GBZMpurmtqT-gyotFh=
+  ~mobileNumber: <string>
+  ~offset: <integer>
+  ~limit: 100
+}
+
+headers {
+  Accept: application/json
+}
+
+body:json {
+  {
+    "initialFunding": {
+      "currency": "{{currencyCode}}",
+      "unit": "MINOR",
+      "value": {{savingsAmountMinor}}
+    }
+  }
+}
+
+docs {
+  List accounts that match the supplied criteria. You must filter the results by specifying one of the following parameters:
+  
+  * `personId` (deprecated)
+  * `companyId` (deprecated)
+  * `mobileNumber` (not yet implemented)
+  
+}

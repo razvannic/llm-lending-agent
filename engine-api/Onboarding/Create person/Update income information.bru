@@ -1,0 +1,39 @@
+meta {
+  name: Update income information
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{baseUrl}}/api/persons/{{personId}}/income
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+      "sourceOfFunds": [
+          "{{sourceOfFunds}}"
+      ],
+      "incomeBand": {
+          "lowerBound": "100000",
+          "upperBound": "200000"
+      },
+      "currency": "{{currencyCode}}",
+      "employmentInformation": {
+          "employmentSector": "{{employmentSector}}",
+          "employerRegulationStatus": "REGULATED",
+          "employmentRole": "SENIOR_MANAGER",
+          "employerName": "Starling"
+      }
+  }
+}
+
+docs {
+  Update a person's income information. If the income information doesn't already exist, it is created.
+}

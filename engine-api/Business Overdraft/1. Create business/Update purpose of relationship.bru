@@ -1,0 +1,21 @@
+meta {
+  name: Update purpose of relationship
+  type: http
+  seq: 9
+}
+
+put {
+  url: {{baseUrl}}/api/businesses/:businessId/purpose-of-relationship
+  body: json
+  auth: none
+}
+
+params:path {
+  businessId: {{businessId}}
+}
+
+body:json {
+  {
+    "purposeOfRelationship": "BUILDING_WEALTH"
+  }
+}

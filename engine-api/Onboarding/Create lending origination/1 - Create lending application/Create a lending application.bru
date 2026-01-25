@@ -1,0 +1,46 @@
+meta {
+  name: Create a lending application
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/persons/:personId/account-holders/:accountHolderId/accounts/:accountId/lending-applications
+  body: json
+  auth: inherit
+}
+
+params:path {
+  personId: {{personId}}
+  accountHolderId: {{accountHolderId}}
+  accountId: {{accountId}}
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "lendingProductId": "{{lendingProductId}}",
+    "eligibilityId": "{{eligibilityId}}"
+  }
+}
+
+script:post-response {
+  let responseData = res.getBody();
+  bru.setVar("lendingApplicationId", responseData.lendingApplicationId);
+  console.log("Lending application: "+responseData.lendingApplicationId);
+}
+
+docs {
+  Use this endpoint to create a lending application for a specific lending product.
+  
+  :::warning
+  
+   This endpoint is not yet implemented and subject to change.
+  
+  :::
+  
+}

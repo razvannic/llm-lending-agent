@@ -1,0 +1,20 @@
+meta {
+  name: List business onboarding actions for a person's business applications
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{baseUrl}}/api/persons/:personId/onboarding/business-actions
+  body: none
+  auth: inherit
+}
+
+params:path {
+  personId: {{personId}}
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

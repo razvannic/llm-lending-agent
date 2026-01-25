@@ -1,0 +1,27 @@
+meta {
+  name: List onboarding check decisions
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/persons/:personId/onboarding/checks/decisions
+  body: none
+  auth: inherit
+}
+
+params:path {
+  personId: {{personId}}
+}
+
+headers {
+  Accept: application/json
+}
+
+script:pre-request {
+  await bru.sleep(3000);
+}
+
+docs {
+  Retrieve an overall representation of a person's onboarding check status, which is determined by the statuses of all their [onboarding checks](/api/reference/operation/createOnboardingChecks).<br><br>If a single onboarding check has failed, the person's overall onboarding check status will be `FAILED`. If no checks have failed, but some checks are not complete, the overall status will be `PENDING`.<br><br>Returns both the overall onboarding check status and a list showing each onboarding check and its status.
+}

@@ -1,0 +1,20 @@
+meta {
+  name: Upload video file to pre-signed url
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{presignedUrl}}
+  body: file
+  auth: inherit
+}
+
+headers {
+  Content-Type: video/mp4
+  Content-MD5: 1B2M2Y8AsgTpgAmY7PhCfg==
+}
+
+body:file {
+  file: @file(../../assets/dummy.mp4) @contentType(video/mp4)
+}

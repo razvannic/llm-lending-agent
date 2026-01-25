@@ -1,0 +1,50 @@
+meta {
+  name: Submit onboarding check decisions
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/persons/{{personId}}/onboarding/checks/decisions
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+      "decisions": {{decisions}}
+  }
+}
+
+script:pre-request {
+  await bru.sleep(2000);
+  const moment = require("moment");
+  const onboardingChecks = bru.getVar("onboardingChecks");
+  console.log(onboardingChecks);
+  
+  let decisions=[];
+  
+  onboardingChecks.forEach(el => {
+    console.log(el);
+    decisions.push({
+      "checkId": el.checkId,
+      "decision": "APPROVED",
+      "source": "Onfido",
+      "decidedAt": moment(),
+      "metadata": "{}",
+      "notes": "postman approves"
+    });
+  });
+  console.log(decisions);
+  bru.setVar("decisions", decisions);
+  
+}
+
+docs {
+  Submit one or more decisions against [onboarding checks](/api/reference/operation/createOnboardingChecks). Currently you must submit all onboarding check decisions in one request, but in the future you'll be able to submit decisions individually.
+}

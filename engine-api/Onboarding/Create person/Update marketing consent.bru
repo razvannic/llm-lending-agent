@@ -1,0 +1,33 @@
+meta {
+  name: Update marketing consent
+  type: http
+  seq: 8
+}
+
+put {
+  url: {{baseUrl}}/api/persons/{{personId}}/marketing-consent
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "communicationConsentsToUpdate": [
+      {
+        "smsOptIn": true,
+        "emailOptIn": false,
+        "notificationOptIn": true,
+        "channel": "MARKETING"
+      }
+    ]
+  }
+}
+
+docs {
+  Update a person's consents to receive marketing communications via different channels. Consents default to false.
+}

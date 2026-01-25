@@ -1,0 +1,35 @@
+meta {
+  name: Generate document upload URL
+  type: http
+  seq: 17
+}
+
+post {
+  url: {{baseUrl}}/api/documents/upload-url
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "contentMd5": "bqZVYjU0gYnPeDsOh2bsCw==",
+    "personId": "{{personId}}",
+    "mimeType": "image/png",
+    "action": "ONBOARDING"
+  }
+}
+
+script:post-response {
+  let responseData = res.getBody();
+  bru.setVar("identityDocumentPresignedUrl", responseData.presignedUrl);
+  bru.setVar("identityDocumentId", responseData.documentId);
+}
+
+docs {
+  Generate a presigned URL to upload an image or video, such as an identity verification video.<br><br>In the request body, specify the `action` that the request relates to, for example `PASSWORD_RESET`. You also need to provide an MD5 hash of the document.
+}

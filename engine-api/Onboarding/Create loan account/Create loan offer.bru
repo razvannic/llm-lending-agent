@@ -1,0 +1,59 @@
+meta {
+  name: Create loan offer
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/persons/{{personId}}/loan-offer
+  body: json
+  auth: inherit
+}
+
+params:query {
+  ~companyId: @9Ab76XEYfVEcFL5r5GBZMpurmtqT-gyotFh=
+  ~mobileNumber: <string>
+  ~offset: <integer>
+  ~limit: 100
+}
+
+headers {
+  Accept: application/json
+}
+
+body:json {
+  {
+    "accountProductId": "{{loanProductId}}",
+    "amountMinorUnits": {{loanAmountMinor}},
+    "arrearsInterestRate": 8.99,
+    "arrearsRepaymentScheduleType": "IMMEDIATE",
+    "interestCompoundingFrequency": "DAILY",
+    "interestRate": 4.99,
+    "loanId": "{{loanId}}",
+    "loanProductConfigurationId": "{{loanProductConfigurationId}}",
+    "numberOfRepayments": 12,
+    "offerTimestamp": "{{currenttimems}}",
+    "repaymentFrequency": "MONTHLY",
+    "repaymentType": "EQUAL_REPAYMENTS",
+    "validFrom": "{{currentdate}}"
+  }
+}
+
+script:pre-request {
+  var moment = require('moment');
+  var uuid = require('uuid');
+  bru.setVar('currentdate', moment().format(("YYYY-MM-DD")));
+  bru.setVar('currentdateday', moment().format(("DD")));
+  bru.setVar('currenttimems', moment().format(("YYYY-MM-DDTHH:mm:ssZ")));
+  bru.setVar('loanId', uuid.v4());
+  
+}
+
+docs {
+  List accounts that match the supplied criteria. You must filter the results by specifying one of the following parameters:
+  
+  * `personId` (deprecated)
+  * `companyId` (deprecated)
+  * `mobileNumber` (not yet implemented)
+  
+}

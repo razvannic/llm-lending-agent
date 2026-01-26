@@ -7,6 +7,7 @@ on:
       - "frontend/**"
       - "infra/terraform/envs/dev/web/**"
       - ".github/workflows/deploy-frontend-dev.yml"
+  workflow_dispatch: {}   # <-- enables "Run workflow" button
 
 permissions:
   id-token: write

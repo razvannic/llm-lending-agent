@@ -6,7 +6,7 @@ on:
     paths:
       - "services/java/agent-gateway/**"
       - "infra/terraform/envs/dev/app/**"
-      - ".github/workflows/deploy-app-dev.yml"
+      - ".github/workflows/deploy-backend-dev.yml"
 
   workflow_dispatch: {}   # <-- enables "Run workflow" button
 

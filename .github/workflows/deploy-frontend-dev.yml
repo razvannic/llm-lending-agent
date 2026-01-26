@@ -41,6 +41,21 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
 
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.6.6"
+
+      - name: Generate config.json from Terraform outputs (dev)
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd infra/terraform/envs/dev/app
+          terraform init -reconfigure
+          API_BASE_URL="$(terraform output -raw api_base_url)"
+          cd - >/dev/null
+          echo "{\"apiBaseUrl\":\"$API_BASE_URL\"}" > frontend/web/public/config.json
+          cat frontend/web/public/config.json
+
       - name: Deploy to S3
         run: |
           aws s3 sync frontend/web/dist "s3://${{ vars.WEB_BUCKET_NAME }}" --delete

@@ -1,11 +1,14 @@
-name: Deploy Backend (dev)
+name: Deploy App (dev) - Build Jar + Terraform Apply
 
 on:
   push:
     branches: [ "main" ]
     paths:
-      - "services/java/**"
-      - ".github/workflows/deploy-backend-dev.yml"
+      - "services/java/agent-gateway/**"
+      - "infra/terraform/envs/dev/app/**"
+      - ".github/workflows/deploy-app-dev.yml"
+
+  workflow_dispatch: {}   # <-- enables "Run workflow" button
 
 permissions:
   id-token: write
@@ -25,9 +28,19 @@ jobs:
           java-version: "17"
           cache: "maven"
 
-      - name: Build agent-gateway (Maven)
+      - name: Build agent-gateway jar
         working-directory: services/java/agent-gateway
         run: mvn -q clean package
+
+      - name: Copy jar into terraform artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p infra/terraform/envs/dev/app/artifacts
+          JAR="$(ls -1 services/java/agent-gateway/target/*.jar | head -n 1)"
+          echo "Using jar: $JAR"
+          cp "$JAR" infra/terraform/envs/dev/app/artifacts/agent-gateway.jar
+          ls -lah infra/terraform/envs/dev/app/artifacts
 
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
@@ -35,22 +48,24 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
 
-      - name: Debug deploy target
-        run: |
-          echo "AWS_REGION=${{ vars.AWS_REGION }}"
-          echo "LAMBDA_AGENT_NAME=${{ vars.LAMBDA_AGENT_NAME }}"
-          
-      - name: Who am I (AWS)
-        run: |
-          aws sts get-caller-identity
-          aws configure list
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.6.6"
 
-      - name: Update Agent Lambda code
-        shell: bash
+      - name: Terraform fmt/validate
+        working-directory: infra/terraform/envs/dev/app
         run: |
-          set -euo pipefail
-          JAR=$(ls -1 services/java/agent-gateway/target/*.jar | head -n 1)
-          echo "Uploading: $JAR"
-          aws lambda update-function-code \
-            --function-name "${{ vars.LAMBDA_AGENT_NAME }}" \
-            --zip-file "fileb://${JAR}"
+          terraform fmt -check
+          terraform validate
+
+      - name: Terraform init
+        working-directory: infra/terraform/envs/dev/app
+        run: terraform init -reconfigure
+
+      - name: Terraform apply (dev)
+        working-directory: infra/terraform/envs/dev/app
+        run: terraform apply -auto-approve -var-file=dev.tfvars
+
+      - name: Outputs
+        working-directory: infra/terraform/envs/dev/app
+        run: terraform output

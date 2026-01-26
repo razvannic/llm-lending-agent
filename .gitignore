@@ -6,3 +6,8 @@ out/
 *.zip
 *.jar
 *.log
+
+**/.terraform/*
+**/*.tfstate
+**/*.tfstate.*
+.crash.log

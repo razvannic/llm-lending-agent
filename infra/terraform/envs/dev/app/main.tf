@@ -6,15 +6,6 @@ terraform {
       version = "~> 5.0"
     }
   }
-
-  # IMPORTANT: set these to your existing tf state bucket + lock table
-  backend "s3" {
-    bucket         = "tf-state-llm-lending-dev-020202772182"
-    key            = "dev/app/terraform.tfstate"
-    region         = "eu-central-1"
-    dynamodb_table = "tf-locks"
-    encrypt        = true
-  }
 }
 
 provider "aws" {

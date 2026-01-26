@@ -63,7 +63,7 @@ export default function App() {
       </div>
 
       <h3 style={{ marginTop: 24 }}>Response</h3>
-      <pre style={{ background: "#f6f6f6", padding: 12, overflow: "auto" }}>{out}</pre>
+      <pre style={{ background: "#cfcfcf", padding: 12, overflow: "auto" }}>{out}</pre>
     </div>
   );
 }

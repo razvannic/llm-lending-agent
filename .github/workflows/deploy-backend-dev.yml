@@ -32,15 +32,32 @@ jobs:
         working-directory: services/java/agent-gateway
         run: mvn -q clean package
 
-      - name: Copy jar into terraform artifacts
+#      - name: Copy jar into terraform artifacts
+#        shell: bash
+#        run: |
+#          set -euo pipefail
+#          mkdir -p infra/terraform/envs/dev/app/artifacts
+#          JAR="$(ls -1 services/java/agent-gateway/target/*.jar | head -n 1)"
+#          echo "Using jar: $JAR"
+#          cp "$JAR" infra/terraform/envs/dev/app/artifacts/agent-gateway.jar
+#          ls -lah infra/terraform/envs/dev/app/artifacts
+
+      - name: Copy shaded jar into terraform artifacts
         shell: bash
         run: |
           set -euo pipefail
+          JAR="services/java/agent-gateway/target/agent-gateway.jar"
+          if [ ! -f "$JAR" ]; then
+            echo "Expected shaded jar not found: $JAR"
+            ls -lah services/java/agent-gateway/target
+            exit 1
+          fi
           mkdir -p infra/terraform/envs/dev/app/artifacts
-          JAR="$(ls -1 services/java/agent-gateway/target/*.jar | head -n 1)"
-          echo "Using jar: $JAR"
           cp "$JAR" infra/terraform/envs/dev/app/artifacts/agent-gateway.jar
           ls -lah infra/terraform/envs/dev/app/artifacts
+          # sanity check: class exists in deployed artifact
+          jar tf infra/terraform/envs/dev/app/artifacts/agent-gateway.jar | grep APIGatewayV2HTTPEvent | head -n 5
+
 
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4

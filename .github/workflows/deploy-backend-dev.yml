@@ -25,8 +25,8 @@ jobs:
           java-version: "17"
           cache: "maven"
 
-      - name: Build (Maven)
-        working-directory: services/java
+      - name: Build agent-gateway (Maven)
+        working-directory: services/java/agent-gateway
         run: mvn -q clean package
 
       - name: Configure AWS credentials (OIDC)
@@ -35,10 +35,12 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
 
-      # If your agent build produces a ZIP, point to it.
-      # If it produces a shaded JAR, use that JAR.
       - name: Update Agent Lambda code
+        shell: bash
         run: |
+          set -euo pipefail
+          JAR=$(ls -1 services/java/agent-gateway/target/*.jar | head -n 1)
+          echo "Uploading: $JAR"
           aws lambda update-function-code \
             --function-name "${{ vars.LAMBDA_AGENT_NAME }}" \
-            --zip-file fileb://services/java/agent-gateway/target/agent-gateway.jar
+            --zip-file "fileb://${JAR}"

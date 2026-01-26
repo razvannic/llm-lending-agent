@@ -13,8 +13,6 @@
 
     <modules>
         <module>services/java/agent-gateway</module>
-        <!-- later -->
-        <!-- <module>services/java/shared</module> -->
     </modules>
 
     <properties>

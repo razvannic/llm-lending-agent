@@ -22,6 +22,7 @@ public class AgentGatewayHandler implements RequestHandler<APIGatewayV2HTTPEvent
     @Override
     public APIGatewayV2HTTPResponse handleRequest(APIGatewayV2HTTPEvent event, Context context) {
         context.getLogger().log("AgentGatewayHandler invoked. tableName=" + tableName + ", env=" + env + "\n");
+        context.getLogger().log("Test update");
 
         try {
             if (tableName == null || tableName.isBlank()) {

@@ -9,7 +9,7 @@ async function loadConfig() {
 
 export default function App() {
   const [apiBaseUrl, setApiBaseUrl] = useState("");
-  const [payload, setPayload] = useState(JSON.stringify({ msg: "hello from react" }, null, 2));
+  const [payload, setPayload] = useState(JSON.stringify({ msg: "Welcome to the AI Lending app" }, null, 2));
   const [out, setOut] = useState("");
   const [loading, setLoading] = useState(false);
 

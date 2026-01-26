@@ -1,0 +1,44 @@
+name: Deploy Backend (dev)
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "services/java/**"
+      - ".github/workflows/deploy-backend-dev.yml"
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    environment: dev
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+          cache: "maven"
+
+      - name: Build (Maven)
+        working-directory: services/java
+        run: mvn -q clean package
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      # If your agent build produces a ZIP, point to it.
+      # If it produces a shaded JAR, use that JAR.
+      - name: Update Agent Lambda code
+        run: |
+          aws lambda update-function-code \
+            --function-name "${{ vars.LAMBDA_AGENT_NAME }}" \
+            --zip-file fileb://services/java/agent-gateway/target/agent-gateway.jar

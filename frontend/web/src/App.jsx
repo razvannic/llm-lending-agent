@@ -13,13 +13,31 @@ export default function App() {
   const [out, setOut] = useState("");
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    loadConfig()
-      .then((cfg) => setApiBaseUrl(cfg.apiBaseUrl || ""))
-      .catch((e) => setOut(`Config error: ${e.message}`));
-  }, []);
+    useEffect(() => {
+        loadConfig()
+            .then((cfg) => setApiBaseUrl(cfg.apiBaseUrl || ""))
+            .catch((e) => setOut(`Config error: ${e.message}`));
+    }, []);
 
-  const callApi = async () => {
+    useEffect(() => {
+        if (!apiBaseUrl) return;
+
+        // Warmup request (do not block UI)
+        (async () => {
+            try {
+                const url = apiBaseUrl.replace(/\/$/, "") + "/api/v1/chat";
+                await fetch(url, {
+                    method: "POST",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify({ warmup: true })
+                });
+            } catch {
+                // ignore
+            }
+        })();
+    }, [apiBaseUrl]);
+
+    const callApi = async () => {
     setLoading(true);
     setOut("Calling...");
     try {

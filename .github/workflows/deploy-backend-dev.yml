@@ -39,6 +39,11 @@ jobs:
         run: |
           echo "AWS_REGION=${{ vars.AWS_REGION }}"
           echo "LAMBDA_AGENT_NAME=${{ vars.LAMBDA_AGENT_NAME }}"
+          
+      - name: Who am I (AWS)
+        run: |
+          aws sts get-caller-identity
+          aws configure list
 
       - name: Update Agent Lambda code
         shell: bash

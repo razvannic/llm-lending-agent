@@ -35,6 +35,11 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
 
+      - name: Debug deploy target
+        run: |
+          echo "AWS_REGION=${{ vars.AWS_REGION }}"
+          echo "LAMBDA_AGENT_NAME=${{ vars.LAMBDA_AGENT_NAME }}"
+
       - name: Update Agent Lambda code
         shell: bash
         run: |

@@ -1,0 +1,29 @@
+bedrock-agentcore
+boto3
+pydantic
+
+
+===
+
+export AWS_PROFILE=personal
+export AWS_REGION=eu-central-1
+ACCOUNT_ID=$(aws sts get-caller-identity --profile $AWS_PROFILE --query Account --output text)
+
+# create ECR repo (if you don't have it)
+aws ecr create-repository \
+  --repository-name dev-llm-lending-agent-agentcore-runtime \
+  --region $AWS_REGION --profile $AWS_PROFILE || true
+
+# login
+aws ecr get-login-password --region $AWS_REGION --profile $AWS_PROFILE \
+ | docker login --username AWS --password-stdin ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+
+# build
+docker build -t agentcore-runtime:dev services/python/agentcore-runtime
+
+# tag
+docker tag agentcore-runtime:dev \
+  ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/dev-llm-lending-agent-agentcore-runtime:dev
+
+# push
+docker push ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/dev-llm-lending-agent-agentcore-runtime:dev

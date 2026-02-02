@@ -1,0 +1,47 @@
+name: Build & Push AgentCore Runtime Image (dev)
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "services/python/agentcore-runtime/**"
+      - ".github/workflows/agentcore-runtime-image.yml"
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-push:
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: eu-central-1
+      IMAGE_TAG: dev
+      ECR_REPO_NAME: dev-llm-lending-agent-agentcore-runtime
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build
+        run: |
+          docker build \
+            -t ${ECR_REPO_NAME}:${IMAGE_TAG} \
+            services/python/agentcore-runtime
+
+      - name: Tag & Push
+        run: |
+          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          ECR_URI=${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_NAME}:${IMAGE_TAG}
+          docker tag ${ECR_REPO_NAME}:${IMAGE_TAG} ${ECR_URI}
+          docker push ${ECR_URI}
+          echo "Pushed: ${ECR_URI}"

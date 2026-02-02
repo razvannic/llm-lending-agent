@@ -85,31 +85,6 @@ resource "aws_iam_role_policy_attachment" "ddb_access_attach" {
   policy_arn = aws_iam_policy.ddb_access.arn
 }
 
-# ---- Lambda (placeholder zip/jar must exist)
-resource "aws_lambda_function" "agent" {
-  function_name = "${local.prefix}-agent-gateway"
-  role          = aws_iam_role.lambda_role.arn
-  runtime       = "java17"
-  handler       = "com.yourorg.agent.AgentGatewayHandler::handleRequest"
-  timeout       = 15
-  memory_size   = 512
-
-  filename         = "${path.module}/artifacts/agent-gateway.jar"
-  source_code_hash = filebase64sha256("${path.module}/artifacts/agent-gateway.jar")
-
-  environment {
-    variables = {
-      ENV            = var.env
-      DDB_TABLE_NAME = aws_dynamodb_table.main.name
-    }
-  }
-}
-
-resource "aws_cloudwatch_log_group" "agent" {
-  name              = "/aws/lambda/${aws_lambda_function.agent.function_name}"
-  retention_in_days = 7
-}
-
 # ---- API Gateway HTTP API -> Lambda
 resource "aws_apigatewayv2_api" "http" {
   name          = "${local.prefix}-http-api"
@@ -122,17 +97,19 @@ resource "aws_apigatewayv2_api" "http" {
   }
 }
 
-resource "aws_apigatewayv2_integration" "agent" {
+resource "aws_apigatewayv2_integration" "chat" {
   api_id                 = aws_apigatewayv2_api.http.id
   integration_type       = "AWS_PROXY"
-  integration_uri        = aws_lambda_function.agent.invoke_arn
+  integration_uri        = aws_lambda_function.agentcore_invoker.invoke_arn
   payload_format_version = "2.0"
 }
+
 
 resource "aws_apigatewayv2_route" "chat" {
   api_id    = aws_apigatewayv2_api.http.id
   route_key = "POST /api/v1/chat"
-  target    = "integrations/${aws_apigatewayv2_integration.agent.id}"
+  target    = "integrations/${aws_apigatewayv2_integration.chat.id}"
+  depends_on = [aws_apigatewayv2_integration.chat]
 }
 
 resource "aws_apigatewayv2_stage" "default" {
@@ -141,18 +118,255 @@ resource "aws_apigatewayv2_stage" "default" {
   auto_deploy = true
 }
 
-resource "aws_lambda_permission" "allow_apigw" {
-  statement_id  = "AllowExecutionFromAPIGateway"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.agent.function_name
-  principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.http.execution_arn}/*/*"
-}
-
-output "lambda_agent_name" {
-  value = aws_lambda_function.agent.function_name
-}
-
 output "api_base_url" {
   value = aws_apigatewayv2_api.http.api_endpoint
+}
+
+# ==== lambda role for stage handler
+
+resource "aws_iam_role" "stage_handler_role" {
+  name = "${local.prefix}-stage-handler-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect = "Allow",
+      Principal = { Service = "lambda.amazonaws.com" },
+      Action = "sts:AssumeRole"
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "stage_handler_basic_logs" {
+  role       = aws_iam_role.stage_handler_role.name
+  policy_arn  = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+# ==== python lambda from zip
+
+resource "aws_lambda_function" "stage_handler" {
+  function_name = "${local.prefix}-stage-handler"
+  role          = aws_iam_role.stage_handler_role.arn
+
+  runtime = "python3.11"
+  handler = "handler.handler"
+
+  filename         = "${path.module}/artifacts/stage-handler.zip"
+  source_code_hash = filebase64sha256("${path.module}/artifacts/stage-handler.zip")
+
+  timeout = 10
+  memory_size = 256
+}
+
+# ==== step functions execution role
+
+resource "aws_iam_role" "sfn_role" {
+  name = "${local.prefix}-sfn-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect = "Allow",
+      Principal = { Service = "states.amazonaws.com" },
+      Action = "sts:AssumeRole"
+    }]
+  })
+}
+
+resource "aws_iam_role_policy" "sfn_invoke_lambda" {
+  name = "${local.prefix}-sfn-invoke-lambda"
+  role = aws_iam_role.sfn_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect = "Allow",
+      Action = ["lambda:InvokeFunction"],
+      Resource = aws_lambda_function.stage_handler.arn
+    }]
+  })
+}
+
+# ==== express state machine (sync)
+
+locals {
+  lending_sfn_definition = jsonencode({
+    Comment = "Lending workflow - one step per interaction",
+    StartAt = "HandleStage",
+    States = {
+      HandleStage = {
+        Type = "Task",
+        Resource = "arn:aws:states:::lambda:invoke",
+        Parameters = {
+          FunctionName = aws_lambda_function.stage_handler.arn,
+          Payload = {
+            "sessionId.$"     = "$.sessionId",
+            "currentStage.$"  = "$.currentStage",
+            "message.$"       = "$.message",
+            "nlu.$"           = "$.nlu"
+          }
+        },
+        OutputPath = "$.Payload",
+        End = true
+      }
+    }
+  })
+}
+
+resource "aws_sfn_state_machine" "lending_workflow" {
+  name     = "${local.prefix}-lending-workflow"
+  role_arn = aws_iam_role.sfn_role.arn
+  type     = "EXPRESS"
+
+  definition = local.lending_sfn_definition
+}
+
+# ==== iam role for agentcore runtime
+
+# resource "aws_iam_role" "agentcore_role" {
+#   name = "${local.prefix}-agentcore-role"
+#
+#   assume_role_policy = jsonencode({
+#     Version = "2012-10-17",
+#     Statement = [{
+#       Effect = "Allow",
+#       Principal = { Service = "bedrock-agentcore.amazonaws.com" },
+#       Action = "sts:AssumeRole"
+#     }]
+#   })
+# }
+
+# ==== permission for dynamo db, read write, step functions, logs
+
+# resource "aws_iam_role_policy" "agentcore_policy" {
+#   name = "${local.prefix}-agentcore-policy"
+#   role = aws_iam_role.agentcore_role.id
+#
+#   policy = jsonencode({
+#     Version = "2012-10-17",
+#     Statement = [
+#       {
+#         Effect = "Allow",
+#         Action = [
+#           "dynamodb:GetItem",
+#           "dynamodb:PutItem",
+#           "dynamodb:UpdateItem",
+#           "dynamodb:Query"
+#         ],
+#         Resource = [
+#           aws_dynamodb_table.main.arn
+#         ]
+#       },
+#       {
+#         Effect = "Allow",
+#         Action = ["states:StartSyncExecution"],
+#         Resource = [aws_sfn_state_machine.lending_workflow.arn]
+#       }
+#     ]
+#   })
+# }
+
+# ==== ecr repository for agentcore image
+
+resource "aws_ecr_repository" "agentcore_runtime" {
+  name = "${local.prefix}-agentcore-runtime"
+}
+
+output "agentcore_ecr_repo_url" {
+  value = aws_ecr_repository.agentcore_runtime.repository_url
+}
+
+# ==== agentcore runtime resource
+
+# resource "aws_bedrockagentcore_agent_runtime" "runtime" {
+#   name = "${local.prefix}-lending-agentcore"
+#
+#   # This must point to your ECR image
+#   agent_runtime_artifact {
+#     container_configuration {
+#       image_uri = "${aws_ecr_repository.agentcore_runtime.repository_url}:dev"
+#     }
+#   }
+#
+#   role_arn = aws_iam_role.agentcore_role.arn
+#
+#   network_configuration {
+#     network_mode = "PUBLIC"
+#   }
+#
+#   environment_variables = {
+#     ENV            = "dev"
+#     DDB_TABLE_NAME = aws_dynamodb_table.main.name
+#     SFN_ARN        = aws_sfn_state_machine.lending_workflow.arn
+#   }
+# }
+
+# ==== iam and lambda agentcore invoker
+
+resource "aws_iam_role" "agentcore_invoker_role" {
+  name = "${local.prefix}-agentcore-invoker-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect = "Allow",
+      Principal = { Service = "lambda.amazonaws.com" },
+      Action = "sts:AssumeRole"
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "agentcore_invoker_logs" {
+  role      = aws_iam_role.agentcore_invoker_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+# ==== permissions to invoke agentcore
+
+resource "aws_iam_role_policy" "agentcore_invoker_policy" {
+  name = "${local.prefix}-agentcore-invoker-policy"
+  role = aws_iam_role.agentcore_invoker_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect = "Allow",
+      Action = ["bedrock-agentcore:InvokeAgentRuntime"],
+      Resource = "*"
+      # Later: restrict Resource to your runtime ARN when you have it
+    }]
+  })
+}
+
+# ==== lambda function
+
+resource "aws_lambda_function" "agentcore_invoker" {
+  function_name = "${local.prefix}-agentcore-invoker"
+  role          = aws_iam_role.agentcore_invoker_role.arn
+
+  runtime = "python3.11"
+  handler = "handler.handler"
+
+  filename         = "${path.module}/artifacts/agentcore-invoker.zip"
+  source_code_hash = filebase64sha256("${path.module}/artifacts/agentcore-invoker.zip")
+
+  timeout     = 15
+  memory_size = 256
+
+  environment {
+    variables = {
+      AGENTCORE_RUNTIME_ARN = var.agentcore_runtime_arn
+      AGENTCORE_QUALIFIER   = "DEFAULT"
+    }
+  }
+}
+
+# ==== lambda permission for api gateway
+
+resource "aws_lambda_permission" "allow_apigw_invoke_invoker" {
+  statement_id  = "AllowAPIGatewayInvokeAgentcoreInvoker"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.agentcore_invoker.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.http.execution_arn}/*/*"
 }

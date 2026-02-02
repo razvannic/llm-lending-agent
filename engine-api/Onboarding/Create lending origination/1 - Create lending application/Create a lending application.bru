@@ -28,6 +28,11 @@ body:json {
   }
 }
 
+vars:pre-request {
+  baseUrl: https://api.enginebystarling.com
+  personId: 
+}
+
 script:post-response {
   let responseData = res.getBody();
   bru.setVar("lendingApplicationId", responseData.lendingApplicationId);

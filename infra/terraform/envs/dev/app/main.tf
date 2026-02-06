@@ -223,48 +223,59 @@ resource "aws_sfn_state_machine" "lending_workflow" {
 
 # ==== iam role for agentcore runtime
 
-# resource "aws_iam_role" "agentcore_role" {
-#   name = "${local.prefix}-agentcore-role"
-#
-#   assume_role_policy = jsonencode({
-#     Version = "2012-10-17",
-#     Statement = [{
-#       Effect = "Allow",
-#       Principal = { Service = "bedrock-agentcore.amazonaws.com" },
-#       Action = "sts:AssumeRole"
-#     }]
-#   })
-# }
+resource "aws_iam_role" "agentcore_role" {
+  name = "${local.prefix}-agentcore-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect = "Allow",
+      Principal = { Service = "bedrock-agentcore.amazonaws.com" },
+      Action = "sts:AssumeRole"
+    }]
+  })
+}
 
 # ==== permission for dynamo db, read write, step functions, logs
 
-# resource "aws_iam_role_policy" "agentcore_policy" {
-#   name = "${local.prefix}-agentcore-policy"
-#   role = aws_iam_role.agentcore_role.id
-#
-#   policy = jsonencode({
-#     Version = "2012-10-17",
-#     Statement = [
-#       {
-#         Effect = "Allow",
-#         Action = [
-#           "dynamodb:GetItem",
-#           "dynamodb:PutItem",
-#           "dynamodb:UpdateItem",
-#           "dynamodb:Query"
-#         ],
-#         Resource = [
-#           aws_dynamodb_table.main.arn
-#         ]
-#       },
-#       {
-#         Effect = "Allow",
-#         Action = ["states:StartSyncExecution"],
-#         Resource = [aws_sfn_state_machine.lending_workflow.arn]
-#       }
-#     ]
-#   })
-# }
+resource "aws_iam_role_policy" "agentcore_policy" {
+  name = "${local.prefix}-agentcore-policy"
+  role = aws_iam_role.agentcore_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+          "dynamodb:UpdateItem",
+          "dynamodb:Query"
+        ],
+        Resource = [aws_dynamodb_table.main.arn]
+      },
+      {
+        Effect = "Allow",
+        Action = ["states:StartSyncExecution"],
+        Resource = [aws_sfn_state_machine.lending_workflow.arn]
+      }
+    ]
+  })
+}
+
+# ==== output role arn and sfn arn
+output "agentcore_exec_role_arn" {
+  value = aws_iam_role.agentcore_role.arn
+}
+
+output "lending_sfn_arn" {
+  value = aws_sfn_state_machine.lending_workflow.arn
+}
+
+output "ddb_table_name" {
+  value = aws_dynamodb_table.main.name
+}
 
 # ==== ecr repository for agentcore image
 

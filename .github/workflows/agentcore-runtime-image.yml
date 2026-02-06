@@ -23,13 +23,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Debug identity 1
+        run: aws sts get-caller-identity
+
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
+          audience: sts.amazonaws.com
 
-      - name: Debug identity
+      - name: Debug identity 2
         run: aws sts get-caller-identity
 
       - name: Login to ECR

@@ -259,6 +259,17 @@ resource "aws_iam_role_policy" "agentcore_policy" {
         Effect = "Allow",
         Action = ["states:StartSyncExecution"],
         Resource = [aws_sfn_state_machine.lending_workflow.arn]
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "ecr:GetAuthorizationToken",
+          "ecr:BatchGetImage",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:DescribeImages",
+          "ecr:DescribeRepositories"
+        ],
+        Resource = "*"
       }
     ]
   })

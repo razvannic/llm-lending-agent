@@ -275,10 +275,10 @@ resource "aws_iam_role_policy" "agentcore_policy" {
         Effect = "Allow",
         Action = [
           "logs:CreateLogGroup",
-           "logs:CreateLogStream",
+          "logs:CreateLogStream",
           "logs:PutLogEvents"
-      ],
-      Resource = "*"
+        ],
+        Resource = "*"
       }
     ]
   })

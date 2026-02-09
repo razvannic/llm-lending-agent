@@ -106,9 +106,9 @@ resource "aws_apigatewayv2_integration" "chat" {
 
 
 resource "aws_apigatewayv2_route" "chat" {
-  api_id    = aws_apigatewayv2_api.http.id
-  route_key = "POST /api/v1/chat"
-  target    = "integrations/${aws_apigatewayv2_integration.chat.id}"
+  api_id     = aws_apigatewayv2_api.http.id
+  route_key  = "POST /api/v1/chat"
+  target     = "integrations/${aws_apigatewayv2_integration.chat.id}"
   depends_on = [aws_apigatewayv2_integration.chat]
 }
 
@@ -130,16 +130,16 @@ resource "aws_iam_role" "stage_handler_role" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [{
-      Effect = "Allow",
+      Effect    = "Allow",
       Principal = { Service = "lambda.amazonaws.com" },
-      Action = "sts:AssumeRole"
+      Action    = "sts:AssumeRole"
     }]
   })
 }
 
 resource "aws_iam_role_policy_attachment" "stage_handler_basic_logs" {
   role       = aws_iam_role.stage_handler_role.name
-  policy_arn  = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
 # ==== python lambda from zip
@@ -154,7 +154,7 @@ resource "aws_lambda_function" "stage_handler" {
   filename         = "${path.module}/artifacts/stage-handler.zip"
   source_code_hash = filebase64sha256("${path.module}/artifacts/stage-handler.zip")
 
-  timeout = 10
+  timeout     = 10
   memory_size = 256
 }
 
@@ -166,9 +166,9 @@ resource "aws_iam_role" "sfn_role" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [{
-      Effect = "Allow",
+      Effect    = "Allow",
       Principal = { Service = "states.amazonaws.com" },
-      Action = "sts:AssumeRole"
+      Action    = "sts:AssumeRole"
     }]
   })
 }
@@ -180,8 +180,8 @@ resource "aws_iam_role_policy" "sfn_invoke_lambda" {
   policy = jsonencode({
     Version = "2012-10-17",
     Statement = [{
-      Effect = "Allow",
-      Action = ["lambda:InvokeFunction"],
+      Effect   = "Allow",
+      Action   = ["lambda:InvokeFunction"],
       Resource = aws_lambda_function.stage_handler.arn
     }]
   })
@@ -195,19 +195,19 @@ locals {
     StartAt = "HandleStage",
     States = {
       HandleStage = {
-        Type = "Task",
+        Type     = "Task",
         Resource = "arn:aws:states:::lambda:invoke",
         Parameters = {
           FunctionName = aws_lambda_function.stage_handler.arn,
           Payload = {
-            "sessionId.$"     = "$.sessionId",
-            "currentStage.$"  = "$.currentStage",
-            "message.$"       = "$.message",
-            "nlu.$"           = "$.nlu"
+            "sessionId.$"    = "$.sessionId",
+            "currentStage.$" = "$.currentStage",
+            "message.$"      = "$.message",
+            "nlu.$"          = "$.nlu"
           }
         },
         OutputPath = "$.Payload",
-        End = true
+        End        = true
       }
     }
   })
@@ -229,9 +229,9 @@ resource "aws_iam_role" "agentcore_role" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [{
-      Effect = "Allow",
+      Effect    = "Allow",
       Principal = { Service = "bedrock-agentcore.amazonaws.com" },
-      Action = "sts:AssumeRole"
+      Action    = "sts:AssumeRole"
     }]
   })
 }
@@ -256,8 +256,8 @@ resource "aws_iam_role_policy" "agentcore_policy" {
         Resource = [aws_dynamodb_table.main.arn]
       },
       {
-        Effect = "Allow",
-        Action = ["states:StartSyncExecution"],
+        Effect   = "Allow",
+        Action   = ["states:StartSyncExecution"],
         Resource = [aws_sfn_state_machine.lending_workflow.arn]
       },
       {
@@ -338,15 +338,15 @@ resource "aws_iam_role" "agentcore_invoker_role" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [{
-      Effect = "Allow",
+      Effect    = "Allow",
       Principal = { Service = "lambda.amazonaws.com" },
-      Action = "sts:AssumeRole"
+      Action    = "sts:AssumeRole"
     }]
   })
 }
 
 resource "aws_iam_role_policy_attachment" "agentcore_invoker_logs" {
-  role      = aws_iam_role.agentcore_invoker_role.name
+  role       = aws_iam_role.agentcore_invoker_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
@@ -359,8 +359,8 @@ resource "aws_iam_role_policy" "agentcore_invoker_policy" {
   policy = jsonencode({
     Version = "2012-10-17",
     Statement = [{
-      Effect = "Allow",
-      Action = ["bedrock-agentcore:InvokeAgentRuntime"],
+      Effect   = "Allow",
+      Action   = ["bedrock-agentcore:InvokeAgentRuntime"],
       Resource = "*"
       # Later: restrict Resource to your runtime ARN when you have it
     }]

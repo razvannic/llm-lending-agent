@@ -16,8 +16,8 @@ resource "aws_s3_bucket_public_access_block" "web" {
   bucket = aws_s3_bucket.web.id
 
   # Keep ACL public access blocked
-  block_public_acls       = true
-  ignore_public_acls      = true
+  block_public_acls  = true
+  ignore_public_acls = true
 
   # Allow public bucket policy (required for website hosting)
   block_public_policy     = false

@@ -270,6 +270,15 @@ resource "aws_iam_role_policy" "agentcore_policy" {
           "ecr:DescribeRepositories"
         ],
         Resource = "*"
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "logs:CreateLogGroup",
+           "logs:CreateLogStream",
+          "logs:PutLogEvents"
+      ],
+      Resource = "*"
       }
     ]
   })

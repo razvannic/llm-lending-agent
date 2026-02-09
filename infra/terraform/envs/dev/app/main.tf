@@ -3,7 +3,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 5.0"
+      version = ">= 6.18.0"
     }
   }
 }
@@ -300,28 +300,35 @@ output "agentcore_ecr_repo_url" {
 
 # ==== agentcore runtime resource
 
-# resource "aws_bedrockagentcore_agent_runtime" "runtime" {
-#   name = "${local.prefix}-lending-agentcore"
-#
-#   # This must point to your ECR image
-#   agent_runtime_artifact {
-#     container_configuration {
-#       image_uri = "${aws_ecr_repository.agentcore_runtime.repository_url}:dev"
-#     }
-#   }
-#
-#   role_arn = aws_iam_role.agentcore_role.arn
-#
-#   network_configuration {
-#     network_mode = "PUBLIC"
-#   }
-#
-#   environment_variables = {
-#     ENV            = "dev"
-#     DDB_TABLE_NAME = aws_dynamodb_table.main.name
-#     SFN_ARN        = aws_sfn_state_machine.lending_workflow.arn
-#   }
-# }
+resource "aws_bedrockagentcore_agent_runtime" "runtime" {
+  # Must match regex ^[a-zA-Z][a-zA-Z0-9_]{0,47}$
+  agent_runtime_name = "${var.env}_${var.app_name}_agentcore" # e.g. dev_llm_lending_agent_agentcore
+
+  role_arn = aws_iam_role.agentcore_role.arn
+
+  agent_runtime_artifact {
+    container_configuration {
+      container_uri = "${aws_ecr_repository.agentcore_runtime.repository_url}:dev"
+    }
+  }
+
+  network_configuration {
+    network_mode = "PUBLIC"
+  }
+
+  environment_variables = {
+    ENV            = var.env
+    DDB_TABLE_NAME = aws_dynamodb_table.main.name
+    SFN_ARN        = aws_sfn_state_machine.lending_workflow.arn
+  }
+
+  depends_on = [aws_ecr_repository.agentcore_runtime]
+}
+
+
+output "agentcore_runtime_arn" {
+  value = aws_bedrockagentcore_agent_runtime.runtime.agent_runtime_arn
+}
 
 # ==== iam and lambda agentcore invoker
 
@@ -377,7 +384,7 @@ resource "aws_lambda_function" "agentcore_invoker" {
 
   environment {
     variables = {
-      AGENTCORE_RUNTIME_ARN = var.agentcore_runtime_arn
+      AGENTCORE_RUNTIME_ARN = aws_bedrockagentcore_agent_runtime.runtime.agent_runtime_arn
       AGENTCORE_QUALIFIER   = "DEFAULT"
     }
   }

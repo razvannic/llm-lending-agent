@@ -56,9 +56,18 @@ jobs:
 
           ls -lah infra/terraform/envs/dev/app/artifacts
 
-      - name: Terraform fmt (check)
+      - name: Terraform fmt
         working-directory: infra/terraform/envs/dev/app
-        run: terraform fmt -check
+        run: terraform fmt -recursive
+
+      - name: Fail if terraform fmt produced changes
+        run: |
+          git status --porcelain
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Terraform files were not formatted. Run: terraform fmt -recursive"
+            git --no-pager diff
+            exit 1
+          fi
 
       - name: Terraform init
         working-directory: infra/terraform/envs/dev/app

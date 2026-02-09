@@ -1,0 +1,76 @@
+name: Deploy Package Lambdas + Terraform Apply
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "services/python/**"
+      - "infra/terraform/envs/dev/app/**"
+      - "deploy-package-lambdas-dev.yml"
+  workflow_dispatch: {}
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    environment: dev
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.6.6"
+
+      - name: Package Lambda artifacts (zip)
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p infra/terraform/envs/dev/app/artifacts
+
+          # --- stage-handler.zip
+          if [ ! -d "services/python/stage-handler" ]; then
+            echo "Missing folder: services/python/stage-handler"
+            echo "Adjust paths in workflow to match your repo."
+            exit 1
+          fi
+          (cd services/python/stage-handler && zip -r ../../../infra/terraform/envs/dev/app/artifacts/stage-handler.zip .)
+
+          # --- agentcore-invoker.zip
+          if [ ! -d "services/python/agentcore-invoker" ]; then
+            echo "Missing folder: services/python/agentcore-invoker"
+            echo "Adjust paths in workflow to match your repo."
+            exit 1
+          fi
+          (cd services/python/agentcore-invoker && zip -r ../../../infra/terraform/envs/dev/app/artifacts/agentcore-invoker.zip .)
+
+          ls -lah infra/terraform/envs/dev/app/artifacts
+
+      - name: Terraform fmt (check)
+        working-directory: infra/terraform/envs/dev/app
+        run: terraform fmt -check
+
+      - name: Terraform init
+        working-directory: infra/terraform/envs/dev/app
+        run: terraform init -reconfigure
+
+      - name: Terraform validate
+        working-directory: infra/terraform/envs/dev/app
+        run: terraform validate
+
+      - name: Terraform apply (dev)
+        working-directory: infra/terraform/envs/dev/app
+        run: terraform apply -auto-approve -var-file=dev.tfvars
+
+      - name: Outputs
+        working-directory: infra/terraform/envs/dev/app
+        run: terraform output

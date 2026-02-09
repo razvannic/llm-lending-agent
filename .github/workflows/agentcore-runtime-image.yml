@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - "services/python/agentcore-runtime/**"
+      - "infra/terraform/envs/dev/app/**"
       - ".github/workflows/agentcore-runtime-image.yml"
 
 permissions:
@@ -18,7 +19,6 @@ jobs:
     env:
       AWS_REGION: eu-central-1
       IMAGE_TAG: dev
-      ECR_REPO_NAME: dev-llm-lending-agent-agentcore-runtime
 
     steps:
       - uses: actions/checkout@v4
@@ -32,6 +32,21 @@ jobs:
       - name: Debug identity
         run: aws sts get-caller-identity
 
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.6.6"
+
+      - name: Read ECR repo URL from Terraform outputs (dev)
+        id: tf
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd infra/terraform/envs/dev/app
+          terraform init -reconfigure
+          ECR_REPO_URL="$(terraform output -raw agentcore_ecr_repo_url)"
+          echo "ecr_repo_url=$ECR_REPO_URL" >> "$GITHUB_OUTPUT"
+          echo "ECR repo: $ECR_REPO_URL"
+
       - name: Login to ECR
         uses: aws-actions/amazon-ecr-login@v2
 
@@ -42,25 +57,15 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Build & Push (arm64)
+        shell: bash
         run: |
-          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-          ECR_URI=${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_NAME}:${IMAGE_TAG}
+          set -euo pipefail
+          ECR_URI="${{ steps.tf.outputs.ecr_repo_url }}:${IMAGE_TAG}"
 
           docker buildx build \
             --platform linux/arm64 \
-            -t ${ECR_URI} \
+            -t "${ECR_URI}" \
             --push \
             services/python/agentcore-runtime
 
           echo "Pushed: ${ECR_URI}"
-
-#      - name: Build
-#        run: docker build -t ${ECR_REPO_NAME}:${IMAGE_TAG} services/python/agentcore-runtime
-#
-#      - name: Tag & Push
-#        run: |
-#          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-#          ECR_URI=${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_NAME}:${IMAGE_TAG}
-#          docker tag ${ECR_REPO_NAME}:${IMAGE_TAG} ${ECR_URI}
-#          docker push ${ECR_URI}
-#          echo "Pushed: ${ECR_URI}"

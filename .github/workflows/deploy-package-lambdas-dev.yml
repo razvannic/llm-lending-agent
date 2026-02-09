@@ -6,7 +6,8 @@ on:
     paths:
       - "services/python/**"
       - "infra/terraform/envs/dev/app/**"
-      - "deploy-package-lambdas-dev.yml"
+      - ".github/workflows/deploy-package-lambdas-dev.yml"
+
   workflow_dispatch: {}
 
 permissions:

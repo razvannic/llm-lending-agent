@@ -63,9 +63,9 @@ jobs:
           ECR_URI="${{ steps.tf.outputs.ecr_repo_url }}:${IMAGE_TAG}"
 
           docker buildx build \
-            --platform linux/arm64 \
-            -t "${ECR_URI}" \
-            --push \
-            services/python/agentcore-runtime
+          --platform linux/amd64,linux/arm64 \
+          -t "${ECR_URI}" \
+          --push \
+          services/python/agentcore-runtime
 
           echo "Pushed: ${ECR_URI}"

@@ -302,7 +302,7 @@ output "agentcore_ecr_repo_url" {
 
 resource "aws_bedrockagentcore_agent_runtime" "runtime" {
   # Must match regex ^[a-zA-Z][a-zA-Z0-9_]{0,47}$
-  agent_runtime_name = "${var.env}_${var.app_name}_agentcore" # e.g. dev_llm_lending_agent_agentcore
+  agent_runtime_name = "${var.env}_${replace(var.app_name, "-", "_")}_agentcore"
 
   role_arn = aws_iam_role.agentcore_role.arn
 

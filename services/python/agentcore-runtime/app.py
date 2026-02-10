@@ -1,6 +1,8 @@
 import os
 import time
 from typing import Any, Optional, Dict
+import json
+import traceback
 
 import boto3
 from pydantic import BaseModel
@@ -63,44 +65,54 @@ def ddb_put_state(session_id: str, stage: str, extra: Dict[str, Any]):
 
 @app.entrypoint
 def invoke(request: Dict[str, Any], context=None) -> Dict[str, Any]:
-    req = ChatRequest.model_validate(request)
+    try:
+        req = ChatRequest.model_validate(request)
 
-    if req.warmup:
-        return {"ok": True, "message": "warmed"}
+        if req.warmup:
+            return {"ok": True, "message": "warmed"}
 
-    session_id = req.sessionId or "demo-session"  # replace with UUID later
+        session_id = req.sessionId or "demo-session"
 
-    item = ddb_get(session_id)
-    current_stage = (item.get("stage", {}) or {}).get("S", "ENQUIRY")
+        item = ddb_get(session_id)
+        current_stage = (item.get("stage", {}) or {}).get("S", "ENQUIRY")
 
-    sfn_in = {
-        "sessionId": session_id,
-        "currentStage": current_stage,
-        "message": req.msg or "",
-        "nlu": {},
-    }
+        sfn_in = {
+            "sessionId": session_id,
+            "currentStage": current_stage,
+            "message": req.msg or "",
+            "nlu": {},
+        }
 
-    exec_res = sfn().start_sync_execution(
-        stateMachineArn=SFN_ARN,
-        input=boto3.json.dumps(sfn_in) if hasattr(boto3, "json") else __import__("json").dumps(sfn_in),
-    )
+        exec_res = sfn().start_sync_execution(
+            stateMachineArn=SFN_ARN,
+            input=json.dumps(sfn_in),
+        )
 
-    out = __import__("json").loads(exec_res["output"])
+        out = json.loads(exec_res["output"])
 
-    next_stage = out.get("nextStage", current_stage)
-    assistant = out.get("assistantMessage", "OK")
-    ui_hints = out.get("uiHints", {})
+        next_stage = out.get("nextStage", current_stage)
+        assistant = out.get("assistantMessage", "OK")
+        ui_hints = out.get("uiHints", {})
 
-    ddb_put_state(session_id, next_stage, {"lastMessage": req.msg or ""})
+        ddb_put_state(session_id, next_stage, {"lastMessage": req.msg or ""})
 
-    return {
-        "ok": True,
-        "sessionId": session_id,
-        "nextStage": next_stage,
-        "assistantMessage": assistant,
-        "uiHints": ui_hints,
-    }
+        return {
+            "ok": True,
+            "sessionId": session_id,
+            "nextStage": next_stage,
+            "assistantMessage": assistant,
+            "uiHints": ui_hints,
+        }
 
+    except Exception as e:
+        # This prints to stdout/stderr -> should show in AgentCore logs once enabled/visible
+        print("ERROR in runtime invoke:", repr(e))
+        print(traceback.format_exc())
+        return {
+            "ok": False,
+            "error": "runtime_exception",
+            "detail": str(e),
+        }
 
 if __name__ == "__main__":
     # Critical: keeps the container alive and exposes the AgentCore endpoints.

@@ -5,9 +5,16 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
+# optional but recommended for TLS calls
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app.py .
 
-CMD ["python", "app.py"]
+# AgentCore runtimes typically need an open port (keep it explicit)
+EXPOSE 8080
+
+CMD ["python", "-u", "app.py"]

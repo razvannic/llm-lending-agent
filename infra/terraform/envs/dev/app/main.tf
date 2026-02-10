@@ -329,6 +329,9 @@ resource "aws_bedrockagentcore_agent_runtime" "runtime" {
     ENV            = var.env
     DDB_TABLE_NAME = aws_dynamodb_table.main.name
     SFN_ARN        = aws_sfn_state_machine.lending_workflow.arn
+
+    AWS_REGION       = var.aws_region
+    AWS_DEFAULT_REGION = var.aws_region
   }
 
   depends_on = [aws_ecr_repository.agentcore_runtime]

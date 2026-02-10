@@ -10,8 +10,8 @@ from bedrock_agentcore import BedrockAgentCoreApp
 
 app = BedrockAgentCoreApp()
 
-TABLE = os.environ["DDB_TABLE_NAME"]
-SFN_ARN = os.environ["SFN_ARN"]
+TABLE = os.getenv("DDB_TABLE_NAME", "")
+SFN_ARN = os.getenv("SFN_ARN", "")
 ENV = os.getenv("ENV", "dev")
 
 # Lazily initialized clients (avoid import-time failures if region/env isn't ready yet)
@@ -65,6 +65,12 @@ def ddb_put_state(session_id: str, stage: str, extra: Dict[str, Any]):
 
 @app.entrypoint
 def invoke(request: Dict[str, Any], context=None) -> Dict[str, Any]:
+    if not TABLE or not SFN_ARN:
+        return {
+            "ok": False,
+            "error": "missing_env",
+            "detail": f"DDB_TABLE_NAME or SFN_ARN not set. DDB_TABLE_NAME={'set' if TABLE else 'missing'}, SFN_ARN={'set' if SFN_ARN else 'missing'}"
+        }
     try:
         req = ChatRequest.model_validate(request)
 

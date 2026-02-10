@@ -13,6 +13,7 @@ app = BedrockAgentCoreApp()
 TABLE = os.getenv("DDB_TABLE_NAME", "")
 SFN_ARN = os.getenv("SFN_ARN", "")
 ENV = os.getenv("ENV", "dev")
+AWS_REGION = os.getenv("AWS_REGION") or os.getenv("AWS_DEFAULT_REGION") or "eu-central-1"
 
 # Lazily initialized clients (avoid import-time failures if region/env isn't ready yet)
 _ddb = None
@@ -21,13 +22,13 @@ _sfn = None
 def ddb():
     global _ddb
     if _ddb is None:
-        _ddb = boto3.client("dynamodb")
+        _ddb = boto3.client("dynamodb", region_name=AWS_REGION)
     return _ddb
 
 def sfn():
     global _sfn
     if _sfn is None:
-        _sfn = boto3.client("stepfunctions")
+        _sfn = boto3.client("stepfunctions", region_name=AWS_REGION)
     return _sfn
 
 
